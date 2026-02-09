@@ -173,8 +173,17 @@ const applyFilters = () => {
   const searchValue = searchInput.value.toLowerCase();
   const stageValue = stageSelect.value;
   const categoryValue = categorySelect.value;
-  const minPrice = Number(minPriceInput.value) || 0;
-  const maxPrice = Number(maxPriceInput.value) || Number.POSITIVE_INFINITY;
+  const minInput = Number(minPriceInput.value);
+  const maxInput = Number(maxPriceInput.value);
+  let minPrice = Number.isFinite(minInput) ? minInput : 0;
+  let maxPrice = Number.isFinite(maxInput) ? maxInput : Number.POSITIVE_INFINITY;
+
+  if (Number.isFinite(minInput) && Number.isFinite(maxInput) && maxInput < minInput) {
+    minPrice = maxInput;
+    maxPrice = minInput;
+    minPriceInput.value = String(minPrice);
+    maxPriceInput.value = String(maxPrice);
+  }
 
   const filtered = products.filter((product) => {
     const matchesSearch =
@@ -220,25 +229,25 @@ const closeModalView = () => {
 };
 
 productGrid.addEventListener("click", (event) => {
-  const button = event.target.closest("button[data-id]");
-  if (!button) return;
-  const productId = Number(button.dataset.id);
-  openModal(productId);
-});
-
-productGrid.addEventListener("click", (event) => {
-  const button = event.target.closest("button[data-save]");
-  if (!button) return;
-  const productId = Number(button.dataset.save);
-  const saved = loadSaved();
-  const index = saved.indexOf(productId);
-  if (index === -1) {
-    saved.push(productId);
-  } else {
-    saved.splice(index, 1);
+  const saveButton = event.target.closest("button[data-save]");
+  if (saveButton) {
+    const productId = Number(saveButton.dataset.save);
+    const saved = loadSaved();
+    const index = saved.indexOf(productId);
+    if (index === -1) {
+      saved.push(productId);
+    } else {
+      saved.splice(index, 1);
+    }
+    updateSaved(saved);
+    applyFilters();
+    return;
   }
-  updateSaved(saved);
-  applyFilters();
+
+  const detailButton = event.target.closest("button[data-id]");
+  if (!detailButton) return;
+  const productId = Number(detailButton.dataset.id);
+  openModal(productId);
 });
 
 searchInput.addEventListener("input", applyFilters);
