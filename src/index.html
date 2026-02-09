@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kuoia | Marketplace educativo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <nav class="nav">
+        <div class="logo">Kuoia</div>
+        <div class="nav-links">
+          <a href="#market">Mercado</a>
+          <a href="#benefits">Beneficios</a>
+          <a href="#community">Comunidad</a>
+        </div>
+        <button class="btn ghost">Iniciar sesión</button>
+      </nav>
+      <div class="hero-content">
+        <div class="hero-text">
+          <p class="tag">Marketplace educativo</p>
+          <h1>Compra y vende recursos educativos con confianza.</h1>
+          <p>
+            Kuoia conecta centros, docentes y familias para reutilizar materiales, descubrir kits
+            pedagógicos y dar vida a proyectos que transforman el aprendizaje.
+          </p>
+          <div class="hero-actions">
+            <button class="btn primary">Publicar producto</button>
+            <button class="btn secondary">Explorar catálogo</button>
+          </div>
+          <div class="hero-stats">
+            <div>
+              <strong>4.8/5</strong>
+              <span>valoración promedio</span>
+            </div>
+            <div>
+              <strong>2.1K</strong>
+              <span>productos listados</span>
+            </div>
+            <div>
+              <strong>680</strong>
+              <span>centros activos</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-card">
+          <h3>Tu panel rápido</h3>
+          <div class="hero-card-row">
+            <span>Ingresos del mes</span>
+            <strong>€2.450</strong>
+          </div>
+          <div class="hero-card-row">
+            <span>Pedidos enviados</span>
+            <strong>38</strong>
+          </div>
+          <div class="hero-card-row">
+            <span>Solicitudes abiertas</span>
+            <strong>12</strong>
+          </div>
+          <div class="hero-card-footer">
+            <button class="btn primary full">Ver oportunidades</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="filters" id="market">
+        <div>
+          <h2>Encuentra el material perfecto</h2>
+          <p>Filtra por etapa, tipo de recurso y necesidades específicas.</p>
+        </div>
+        <div class="filter-grid">
+          <div class="search-box">
+            <input id="searchInput" type="text" placeholder="Busca libros, kits STEAM, mobiliario..." />
+          </div>
+          <select id="stageSelect">
+            <option value="">Etapa educativa</option>
+            <option value="infantil">Infantil</option>
+            <option value="primaria">Primaria</option>
+            <option value="secundaria">Secundaria</option>
+            <option value="bachillerato">Bachillerato</option>
+            <option value="especial">Necesidades especiales</option>
+          </select>
+          <select id="categorySelect">
+            <option value="">Categoría</option>
+            <option value="libros">Libros y lecturas</option>
+            <option value="tecnologia">Tecnología</option>
+            <option value="mobiliario">Mobiliario</option>
+            <option value="didactico">Material didáctico</option>
+            <option value="arte">Arte y creatividad</option>
+          </select>
+          <button id="resetFilters" class="btn ghost">Limpiar filtros</button>
+        </div>
+      </section>
+
+      <section class="market-grid" id="productGrid"></section>
+
+      <section class="benefits" id="benefits">
+        <div class="benefits-header">
+          <h2>Una experiencia pensada para la comunidad educativa</h2>
+          <p>
+            Desde la publicación inteligente hasta la logística colaborativa, todo está diseñado
+            para ahorrar tiempo y maximizar impacto.
+          </p>
+        </div>
+        <div class="benefits-grid">
+          <article>
+            <h3>Publicaciones guiadas</h3>
+            <p>Plantillas que ayudan a describir el estado, nivel y uso pedagógico del recurso.</p>
+          </article>
+          <article>
+            <h3>Pagos seguros</h3>
+            <p>Escrow con liberación de fondos cuando el material llega al centro o familia.</p>
+          </article>
+          <article>
+            <h3>Logística compartida</h3>
+            <p>Rutas agrupadas entre centros cercanos para reducir costes y huella.</p>
+          </article>
+          <article>
+            <h3>Recomendaciones</h3>
+            <p>Motor de afinidad por proyecto educativo, presupuesto y experiencia previa.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="community" id="community">
+        <div>
+          <h2>Conecta con una red de confianza</h2>
+          <p>
+            Centros, AMPAs y docentes certificados comparten valoraciones y listas colaborativas.
+          </p>
+        </div>
+        <div class="community-card">
+          <div>
+            <strong>Top búsqueda hoy</strong>
+            <p>Kit de laboratorio básico + microscopio digital</p>
+          </div>
+          <button class="btn secondary">Crear lista compartida</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div>
+        <div class="logo">Kuoia</div>
+        <p>Marketplace educativo para comprar, vender y reutilizar recursos.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#">Ayuda</a>
+        <a href="#">Seguridad</a>
+        <a href="#">Términos</a>
+      </div>
+    </footer>
+
+    <div class="modal" id="productModal" aria-hidden="true">
+      <div class="modal-content">
+        <button class="close-modal" id="closeModal">×</button>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
