@@ -15,7 +15,10 @@
   <body>
     <header class="hero">
       <nav class="nav">
-        <div class="logo">Kuoia</div>
+        <div class="logo">
+          <img src="assets/kuoia-logo.svg" alt="Kuoia" class="logo-mark" />
+          <span>Kuoia</span>
+        </div>
         <div class="nav-links">
           <a href="#market">Mercado</a>
           <a href="#benefits">Beneficios</a>
@@ -23,6 +26,11 @@
         </div>
         <button class="btn ghost">Iniciar sesión</button>
       </nav>
+      <div class="hero-bg" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
       <div class="hero-content">
         <div class="hero-text">
           <p class="tag">Marketplace educativo</p>
@@ -50,22 +58,49 @@
             </div>
           </div>
         </div>
-        <div class="hero-card">
-          <h3>Tu panel rápido</h3>
-          <div class="hero-card-row">
-            <span>Ingresos del mes</span>
-            <strong>€2.450</strong>
+        <div class="hero-panel">
+          <div class="hero-login">
+            <div class="login-header">
+              <span class="eyebrow">Acceso Kuoia</span>
+              <h3>Inicia sesión</h3>
+              <p>Gestiona tus publicaciones, ventas y listas guardadas en segundos.</p>
+            </div>
+            <form class="login-form">
+              <label>
+                Correo
+                <input type="email" placeholder="tu@email.com" required />
+              </label>
+              <label>
+                Contraseña
+                <input type="password" placeholder="••••••••" required />
+              </label>
+              <div class="login-actions">
+                <button class="btn primary full" type="submit">Entrar</button>
+                <button class="btn ghost full" type="button">Continuar con Google</button>
+              </div>
+              <div class="login-footer">
+                <a href="#">¿Olvidaste tu contraseña?</a>
+                <span>Nuevo aquí? <a href="#">Crear cuenta</a></span>
+              </div>
+            </form>
           </div>
-          <div class="hero-card-row">
-            <span>Pedidos enviados</span>
-            <strong>38</strong>
-          </div>
-          <div class="hero-card-row">
-            <span>Solicitudes abiertas</span>
-            <strong>12</strong>
-          </div>
-          <div class="hero-card-footer">
-            <button class="btn primary full">Ver oportunidades</button>
+          <div class="hero-card">
+            <h3>Tu panel rápido</h3>
+            <div class="hero-card-row">
+              <span>Ingresos del mes</span>
+              <strong>€2.450</strong>
+            </div>
+            <div class="hero-card-row">
+              <span>Pedidos enviados</span>
+              <strong>38</strong>
+            </div>
+            <div class="hero-card-row">
+              <span>Solicitudes abiertas</span>
+              <strong>12</strong>
+            </div>
+            <div class="hero-card-footer">
+              <button class="btn secondary full">Ver oportunidades</button>
+            </div>
           </div>
         </div>
       </div>
@@ -150,7 +185,10 @@
 
     <footer class="footer">
       <div>
-        <div class="logo">Kuoia</div>
+        <div class="logo">
+          <img src="assets/kuoia-logo.svg" alt="Kuoia" class="logo-mark" />
+          <span>Kuoia</span>
+        </div>
         <p>Marketplace educativo para comprar, vender y reutilizar recursos.</p>
       </div>
       <div class="footer-links">

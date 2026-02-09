@@ -87,6 +87,7 @@ const resetFilters = document.getElementById("resetFilters");
 const modal = document.getElementById("productModal");
 const modalBody = document.getElementById("modalBody");
 const closeModal = document.getElementById("closeModal");
+const loginForm = document.querySelector(".login-form");
 
 const currency = new Intl.NumberFormat("es-ES", {
   style: "currency",
@@ -198,5 +199,11 @@ modal.addEventListener("click", (event) => {
     closeModalView();
   }
 });
+
+if (loginForm) {
+  loginForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+  });
+}
 
 renderProducts(products);
