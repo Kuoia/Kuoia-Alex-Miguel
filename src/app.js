@@ -10,6 +10,8 @@ const products = [
     rating: 4.9,
     location: "Madrid",
     description: "Incluye placas programables, sensores básicos y guías didácticas para iniciar proyectos de robótica.",
+    image:
+      "https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1200&q=80",
   },
   {
     id: 2,
@@ -22,6 +24,8 @@ const products = [
     rating: 4.6,
     location: "Valencia",
     description: "Conjunto de mesas modulares y taburetes ergonómicos para metodologías colaborativas.",
+    image:
+      "https://images.unsplash.com/photo-1588075592446-265fd1e6e76f?auto=format&fit=crop&w=1200&q=80",
   },
   {
     id: 3,
@@ -34,6 +38,8 @@ const products = [
     rating: 4.7,
     location: "Sevilla",
     description: "Pack de 6 tablets con fundas reforzadas y software educativo preinstalado.",
+    image:
+      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80",
   },
   {
     id: 4,
@@ -46,6 +52,8 @@ const products = [
     rating: 4.8,
     location: "Bilbao",
     description: "Colección de 25 libros de lectura fácil con fichas de comprensión y club de lectura.",
+    image:
+      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80",
   },
   {
     id: 5,
@@ -58,6 +66,8 @@ const products = [
     rating: 5,
     location: "Granada",
     description: "Recursos multisensoriales para aulas TEA, con tarjetas visuales y paneles táctiles.",
+    image:
+      "https://images.unsplash.com/photo-1584697964154-6c8f26f05f39?auto=format&fit=crop&w=1200&q=80",
   },
   {
     id: 6,
@@ -70,6 +80,8 @@ const products = [
     rating: 4.5,
     location: "Zaragoza",
     description: "Materiales reutilizables para talleres de creatividad y proyectos de diseño circular.",
+    image:
+      "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1200&q=80",
   },
 ];
 
@@ -139,6 +151,7 @@ const renderProducts = (items) => {
     const card = document.createElement("article");
     card.className = "product-card";
     card.innerHTML = `
+      <img class="product-image" src="${product.image}" alt="${product.name}" loading="lazy" decoding="async" />
       <div class="product-header">
         <span>${product.location}</span>
         <span class="badge">${product.condition}</span>
@@ -184,6 +197,7 @@ const openModal = (productId) => {
   if (!product) return;
 
   modalBody.innerHTML = `
+    <img class="modal-product-image" src="${product.image}" alt="${product.name}" loading="lazy" decoding="async" />
     <h2>${product.name}</h2>
     <p>${product.description}</p>
     <div class="product-meta">

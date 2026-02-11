@@ -1,16 +1,31 @@
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <radialGradient id="bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(256 128) rotate(90) scale(384)">
-      <stop offset="0" stop-color="#0e2a4f"/>
-      <stop offset="1" stop-color="#07182f"/>
+    <radialGradient id="bg-gradient" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(512 180) rotate(90) scale(760)">
+      <stop offset="0" stop-color="#0F3D70"/>
+      <stop offset="0.55" stop-color="#062B54"/>
+      <stop offset="1" stop-color="#041833"/>
     </radialGradient>
-    <linearGradient id="kGrad" x1="116" y1="128" x2="420" y2="384" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#1e90ff"/>
-      <stop offset="1" stop-color="#22e0c7"/>
+    <linearGradient id="k-gradient" x1="220" y1="280" x2="770" y2="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22A7FF"/>
+      <stop offset="1" stop-color="#26E8CF"/>
     </linearGradient>
+    <linearGradient id="arrow-gradient" x1="620" y1="512" x2="790" y2="512" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#25D8DE"/>
+      <stop offset="1" stop-color="#2AF0C4"/>
+    </linearGradient>
+    <filter id="soft-glow" x="18" y="18" width="988" height="988" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feGaussianBlur stdDeviation="8" result="effect1_foregroundBlur"/>
+    </filter>
   </defs>
-  <circle cx="256" cy="256" r="230" fill="url(#bg)" stroke="#0aa1ff" stroke-opacity="0.4" stroke-width="6"/>
-  <rect x="120" y="150" width="86" height="212" rx="12" fill="url(#kGrad)"/>
-  <path d="M206 256L352 150H412L262 274L412 362H346L206 262V256Z" fill="url(#kGrad)"/>
-  <path d="M300 250L354 302L300 354" stroke="url(#kGrad)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <g filter="url(#soft-glow)">
+    <circle cx="512" cy="512" r="462" fill="url(#bg-gradient)"/>
+    <circle cx="512" cy="512" r="460" stroke="#13B7FF" stroke-opacity="0.38" stroke-width="4"/>
+  </g>
+
+  <rect x="214" y="304" width="114" height="420" rx="12" fill="url(#k-gradient)"/>
+  <path d="M328 512L523 316H774L494 590L776 760H520L328 576V512Z" fill="url(#k-gradient)"/>
+  <path d="M648 436H702L792 512L702 588H648L728 512L648 436Z" fill="url(#arrow-gradient)"/>
 </svg>
