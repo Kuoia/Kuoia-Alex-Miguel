@@ -25,6 +25,28 @@ const supabaseUrl = document.querySelector('meta[name="supabase-url"]')?.content
 const supabaseAnonKey = document.querySelector('meta[name="supabase-anon-key"]')?.content?.trim();
 const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
+const checkSupabaseConnection = async () => {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return { ok: false, message: "Falta configurar Supabase en index.html." };
+  }
+
+  try {
+    const response = await fetch(`${supabaseUrl}/auth/v1/settings`, {
+      headers: {
+        apikey: supabaseAnonKey,
+      },
+    });
+
+    if (!response.ok) {
+      return { ok: false, message: `Supabase responde con estado ${response.status}.` };
+    }
+
+    return { ok: true, message: "Conexión con Supabase activa." };
+  } catch (_error) {
+    return { ok: false, message: "No se pudo conectar con Supabase. Revisa URL, key y red." };
+  }
+};
+
 const productCatalog = [
   {
     id: "p1",
@@ -310,6 +332,9 @@ logoutButton.addEventListener("click", async () => {
   showToast("Sesión cerrada.");
   setActivePanel("login");
 });
+
+const connectionStatus = await checkSupabaseConnection();
+if (!connectionStatus.ok) showToast(connectionStatus.message);
 
 if (supabase) {
   supabase.auth.onAuthStateChange((_event, session) => {
