@@ -20,6 +20,9 @@ const marketplaceGrid = document.getElementById("marketplaceGrid");
 const emptyState = document.getElementById("emptyState");
 const toast = document.getElementById("toast");
 const networkCanvas = document.getElementById("networkCanvas");
+const subscriptionsButton = document.getElementById("subscriptionsButton");
+const subscriptionsView = document.getElementById("subscriptionsView");
+const topbarAuthCta = document.getElementById("topbarAuthCta");
 
 const supabaseUrl = document.querySelector('meta[name="supabase-url"]')?.content?.trim();
 const supabaseAnonKey = document.querySelector('meta[name="supabase-anon-key"]')?.content?.trim();
@@ -211,11 +214,22 @@ const setActivePanel = (panel) => {
 const showAuthView = () => {
   authView.classList.remove("hidden");
   marketplaceView.classList.add("hidden");
+  subscriptionsView.classList.add("hidden");
+  topbarAuthCta.classList.add("hidden");
+};
+
+const showSubscriptionsView = () => {
+  authView.classList.add("hidden");
+  marketplaceView.classList.add("hidden");
+  subscriptionsView.classList.remove("hidden");
+  topbarAuthCta.classList.remove("hidden");
 };
 
 const showMarketplaceView = (user) => {
   authView.classList.add("hidden");
   marketplaceView.classList.remove("hidden");
+  subscriptionsView.classList.add("hidden");
+  topbarAuthCta.classList.add("hidden");
 
   const fullName = [user?.user_metadata?.firstName, user?.user_metadata?.lastName].filter(Boolean).join(" ").trim();
   const fallback = user?.email || "tu cuenta";
@@ -227,6 +241,11 @@ const showMarketplaceView = (user) => {
 
 loginTab.addEventListener("click", () => setActivePanel("login"));
 registerTab.addEventListener("click", () => setActivePanel("register"));
+subscriptionsButton?.addEventListener("click", showSubscriptionsView);
+topbarAuthCta?.addEventListener("click", () => {
+  showAuthView();
+  setActivePanel("login");
+});
 
 [searchInput, locationFilter, centerFilter, typeFilter].forEach((input) => {
   input.addEventListener("input", renderProducts);

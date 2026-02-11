@@ -30,73 +30,124 @@
         <img src="assets/kuoia-logo.svg" alt="Kuoia" class="logo-mark" />
         <span>Kuoia</span>
       </a>
+      <button class="btn btn-secondary topbar-cta hidden" id="topbarAuthCta" type="button">
+        Entrar o registrarse
+      </button>
     </header>
 
     <main>
       <section class="auth-shell" id="authView">
-        <section class="auth-card" id="authCard" aria-label="Acceso de usuario">
-          <div class="auth-header">
-            <p class="eyebrow">Bienvenido a Kuoia</p>
-            <h1>Accede a tu cuenta</h1>
-            <p class="subtitle">Todo en un solo lugar para colegios, familias y recursos educativos.</p>
-          </div>
+        <div class="auth-stack">
+          <section class="auth-card" id="authCard" aria-label="Acceso de usuario">
+            <div class="auth-header">
+              <p class="eyebrow">Bienvenido a Kuoia</p>
+              <h1>Accede a tu cuenta</h1>
+              <p class="subtitle">Todo en un solo lugar para colegios, familias y recursos educativos.</p>
+            </div>
 
-          <div class="auth-toggle" role="tablist" aria-label="Seleccionar panel de acceso">
-            <button class="toggle-btn active" id="loginTab" role="tab" aria-selected="true" aria-controls="loginPanel" type="button">
-              Iniciar sesión
-            </button>
-            <button class="toggle-btn" id="registerTab" role="tab" aria-selected="false" aria-controls="registerPanel" type="button">
-              Crear usuario
-            </button>
-          </div>
+            <div class="auth-toggle" role="tablist" aria-label="Seleccionar panel de acceso">
+              <button class="toggle-btn active" id="loginTab" role="tab" aria-selected="true" aria-controls="loginPanel" type="button">
+                Iniciar sesión
+              </button>
+              <button class="toggle-btn" id="registerTab" role="tab" aria-selected="false" aria-controls="registerPanel" type="button">
+                Crear usuario
+              </button>
+            </div>
 
-          <div class="auth-panels">
-            <form class="auth-form active" id="loginPanel" role="tabpanel" aria-labelledby="loginTab">
-              <label>
-                Correo electrónico
-                <input type="email" name="email" placeholder="tu@email.com" required />
-              </label>
-              <label>
-                Contraseña
-                <input type="password" name="password" placeholder="••••••••" required />
-              </label>
-              <button class="btn btn-primary" type="submit">Entrar</button>
-            </form>
+            <div class="auth-panels">
+              <form class="auth-form active" id="loginPanel" role="tabpanel" aria-labelledby="loginTab">
+                <label>
+                  Correo electrónico
+                  <input type="email" name="email" placeholder="tu@email.com" required />
+                </label>
+                <label>
+                  Contraseña
+                  <input type="password" name="password" placeholder="••••••••" required />
+                </label>
+                <button class="btn btn-primary" type="submit">Entrar</button>
+              </form>
 
-            <form class="auth-form" id="registerPanel" role="tabpanel" aria-labelledby="registerTab" hidden>
-              <label>
-                Nombre
-                <input type="text" name="firstName" placeholder="Tu nombre" required />
-              </label>
-              <label>
-                Apellidos
-                <input type="text" name="lastName" placeholder="Tus apellidos" required />
-              </label>
-              <label>
-                Identidad
-                <select name="identity" required>
-                  <option value="" selected disabled>Selecciona una opción</option>
-                  <option value="centro-educativo">Centro educativo</option>
-                  <option value="particular">Particular</option>
-                  <option value="docente">Docente</option>
-                </select>
-              </label>
-              <label>
-                Localidad
-                <input type="text" name="location" placeholder="Tu localidad" required />
-              </label>
-              <label>
-                Correo electrónico
-                <input type="email" name="email" placeholder="tu@email.com" required />
-              </label>
-              <label>
-                Contraseña
-                <input type="password" name="password" placeholder="Mínimo 8 caracteres" minlength="8" required />
-              </label>
-              <button class="btn btn-primary" type="submit">Crear cuenta</button>
-            </form>
+              <form class="auth-form" id="registerPanel" role="tabpanel" aria-labelledby="registerTab" hidden>
+                <label>
+                  Nombre
+                  <input type="text" name="firstName" placeholder="Tu nombre" required />
+                </label>
+                <label>
+                  Apellidos
+                  <input type="text" name="lastName" placeholder="Tus apellidos" required />
+                </label>
+                <label>
+                  Identidad
+                  <select name="identity" required>
+                    <option value="" selected disabled>Selecciona una opción</option>
+                    <option value="centro-educativo">Centro educativo</option>
+                    <option value="particular">Particular</option>
+                    <option value="docente">Docente</option>
+                  </select>
+                </label>
+                <label>
+                  Localidad
+                  <input type="text" name="location" placeholder="Tu localidad" required />
+                </label>
+                <label>
+                  Correo electrónico
+                  <input type="email" name="email" placeholder="tu@email.com" required />
+                </label>
+                <label>
+                  Contraseña
+                  <input type="password" name="password" placeholder="Mínimo 8 caracteres" minlength="8" required />
+                </label>
+                <button class="btn btn-primary" type="submit">Crear cuenta</button>
+              </form>
+            </div>
+          </section>
+
+          <button class="floating-subscriptions-btn" id="subscriptionsButton" type="button">
+            Suscripciones
+          </button>
+        </div>
+      </section>
+
+      <section class="subscriptions-view hidden" id="subscriptionsView" aria-label="Planes de suscripción">
+        <header class="subscriptions-header">
+          <div>
+            <p class="eyebrow">Elige tu plan</p>
+            <h2>Suscripciones Kuoia para cada necesidad</h2>
+            <p class="subtitle">Compara funciones, precios y escala cuando quieras.</p>
           </div>
-        </section>
+        </header>
+        <div class="plans-grid">
+          <article class="plan-card plan-gray">
+            <h3>Gris · Esencial</h3>
+            <p class="plan-price">9€<span>/mes</span></p>
+            <ul>
+              <li>Acceso básico al catálogo</li>
+              <li>1 perfil de usuario</li>
+              <li>Soporte por email</li>
+            </ul>
+            <button class="btn btn-primary" type="button">Suscribirse al plan</button>
+          </article>
+          <article class="plan-card plan-green">
+            <h3>Verde · Básico</h3>
+            <p class="plan-price">19€<span>/mes</span></p>
+            <ul>
+              <li>Todo lo del plan Esencial</li>
+              <li>Hasta 5 perfiles</li>
+              <li>Automatizaciones iniciales</li>
+            </ul>
+            <button class="btn btn-primary" type="button">Suscribirse al plan</button>
+          </article>
+          <article class="plan-card plan-blue">
+            <h3>Azul · Premium</h3>
+            <p class="plan-price">39€<span>/mes</span></p>
+            <ul>
+              <li>Funciones avanzadas premium</li>
+              <li>Usuarios ilimitados</li>
+              <li>Analíticas, API y soporte prioritario</li>
+            </ul>
+            <button class="btn btn-primary" type="button">Suscribirse al plan</button>
+          </article>
+        </div>
       </section>
 
       <section class="marketplace hidden" id="marketplaceView" aria-label="Pantalla principal dinámica">
