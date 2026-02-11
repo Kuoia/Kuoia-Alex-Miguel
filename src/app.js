@@ -277,18 +277,25 @@ if (loginForm) {
 }
 
 if (themeToggle) {
+  const syncThemeToggleState = () => {
+    const isDark = document.body.classList.contains("dark");
+    themeToggle.setAttribute("aria-pressed", String(isDark));
+    themeToggle.setAttribute("aria-label", isDark ? "Activar modo día" : "Activar modo oscuro");
+  };
+
   themeToggle.addEventListener("click", () => {
     document.body.classList.toggle("dark");
     const isDark = document.body.classList.contains("dark");
-    themeToggle.textContent = isDark ? "☀️" : "🌙";
     localStorage.setItem("kuoia-theme", isDark ? "dark" : "light");
+    syncThemeToggleState();
   });
 
   const storedTheme = localStorage.getItem("kuoia-theme");
   if (storedTheme === "dark") {
     document.body.classList.add("dark");
-    themeToggle.textContent = "☀️";
   }
+
+  syncThemeToggleState();
 }
 
 const counterElements = document.querySelectorAll("[data-counter]");

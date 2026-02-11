@@ -29,11 +29,18 @@
           <a href="#community">Comunidad</a>
         </div>
         <div class="nav-actions">
-          <button id="themeToggle" class="btn ghost" type="button" aria-label="Cambiar tema">🌙</button>
+          <button id="themeToggle" class="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false">
+            <span class="theme-toggle-track">
+              <span class="theme-icon sun" aria-hidden="true">☀️</span>
+              <span class="theme-thumb"></span>
+              <span class="theme-icon moon" aria-hidden="true">🌙</span>
+            </span>
+          </button>
           <button class="btn ghost" type="button">Iniciar sesión</button>
         </div>
       </nav>
 
+      <div class="hero-gif" aria-hidden="true"></div>
       <div class="hero-bg" aria-hidden="true">
         <span></span>
         <span></span>
