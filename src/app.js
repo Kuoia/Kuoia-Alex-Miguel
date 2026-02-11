@@ -1,190 +1,345 @@
-const authCard = document.getElementById("authCard");
-const loginTab = document.getElementById("loginTab");
-const registerTab = document.getElementById("registerTab");
-const loginPanel = document.getElementById("loginPanel");
-const registerPanel = document.getElementById("registerPanel");
+const products = [
+  {
+    id: 1,
+    name: "Kit STEAM robótica inicial",
+    price: 240,
+    stage: "primaria",
+    category: "tecnologia",
+    seller: "Colegio San Rafael",
+    condition: "Excelente",
+    rating: 4.9,
+    location: "Madrid",
+    description: "Incluye placas programables, sensores básicos y guías didácticas para iniciar proyectos de robótica.",
+    image:
+      "https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: 2,
+    name: "Mobiliario flexible aula activa",
+    price: 520,
+    stage: "secundaria",
+    category: "mobiliario",
+    seller: "IES Nova Aula",
+    condition: "Buen estado",
+    rating: 4.6,
+    location: "Valencia",
+    description: "Conjunto de mesas modulares y taburetes ergonómicos para metodologías colaborativas.",
+    image:
+      "https://images.unsplash.com/photo-1588075592446-265fd1e6e76f?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: 3,
+    name: "Tablets educativas (pack x6)",
+    price: 780,
+    stage: "infantil",
+    category: "tecnologia",
+    seller: "Academia Mentes",
+    condition: "Reacondicionado",
+    rating: 4.7,
+    location: "Sevilla",
+    description: "Pack de 6 tablets con fundas reforzadas y software educativo preinstalado.",
+    image:
+      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: 4,
+    name: "Pack de libros lectura compartida",
+    price: 85,
+    stage: "primaria",
+    category: "libros",
+    seller: "Profesora Ana",
+    condition: "Como nuevo",
+    rating: 4.8,
+    location: "Bilbao",
+    description: "Colección de 25 libros de lectura fácil con fichas de comprensión y club de lectura.",
+    image:
+      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: 5,
+    name: "Kit sensorial inclusivo",
+    price: 180,
+    stage: "especial",
+    category: "didactico",
+    seller: "Fundación Integra",
+    condition: "Nuevo",
+    rating: 5,
+    location: "Granada",
+    description: "Recursos multisensoriales para aulas TEA, con tarjetas visuales y paneles táctiles.",
+    image:
+      "https://images.unsplash.com/photo-1584697964154-6c8f26f05f39?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: 6,
+    name: "Set arte sostenible",
+    price: 95,
+    stage: "bachillerato",
+    category: "arte",
+    seller: "IES Horizonte",
+    condition: "Buen estado",
+    rating: 4.5,
+    location: "Zaragoza",
+    description: "Materiales reutilizables para talleres de creatividad y proyectos de diseño circular.",
+    image:
+      "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1200&q=80",
+  },
+];
+
+const productGrid = document.getElementById("productGrid");
+const searchInput = document.getElementById("searchInput");
+const stageSelect = document.getElementById("stageSelect");
+const categorySelect = document.getElementById("categorySelect");
+const sortSelect = document.getElementById("sortSelect");
+const resetFilters = document.getElementById("resetFilters");
+const resultCount = document.getElementById("resultCount");
+const quickFilters = document.getElementById("quickFilters");
+const modal = document.getElementById("productModal");
+const modalBody = document.getElementById("modalBody");
+const closeModal = document.getElementById("closeModal");
+const loginForm = document.getElementById("loginForm");
+const themeToggle = document.getElementById("themeToggle");
 const toast = document.getElementById("toast");
-const networkCanvas = document.getElementById("networkCanvas");
+
+const currency = new Intl.NumberFormat("es-ES", {
+  style: "currency",
+  currency: "EUR",
+  maximumFractionDigits: 0,
+});
 
 const showToast = (message) => {
   if (!toast) return;
   toast.textContent = message;
   toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 1700);
+  setTimeout(() => toast.classList.remove("show"), 1900);
 };
 
-const setActivePanel = (panel) => {
-  const isLogin = panel === "login";
-
-  loginTab.classList.toggle("active", isLogin);
-  loginTab.setAttribute("aria-selected", String(isLogin));
-
-  registerTab.classList.toggle("active", !isLogin);
-  registerTab.setAttribute("aria-selected", String(!isLogin));
-
-  loginPanel.classList.toggle("active", isLogin);
-  loginPanel.hidden = !isLogin;
-
-  registerPanel.classList.toggle("active", !isLogin);
-  registerPanel.hidden = isLogin;
+const updateResultsLabel = (total) => {
+  resultCount.textContent = `${total} ${total === 1 ? "resultado" : "resultados"}`;
 };
 
-loginTab.addEventListener("click", () => setActivePanel("login"));
-registerTab.addEventListener("click", () => setActivePanel("register"));
+const getSortedProducts = (list) => {
+  const sorted = [...list];
+  switch (sortSelect.value) {
+    case "price-asc":
+      sorted.sort((a, b) => a.price - b.price);
+      break;
+    case "price-desc":
+      sorted.sort((a, b) => b.price - a.price);
+      break;
+    case "rating-desc":
+      sorted.sort((a, b) => b.rating - a.rating);
+      break;
+    default:
+      sorted.sort((a, b) => b.rating - a.rating);
+      break;
+  }
+  return sorted;
+};
 
-[loginPanel, registerPanel].forEach((form) => {
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const message = form.id === "loginPanel" ? "Inicio de sesión simulado ✨" : "Usuario creado correctamente ✨";
-    showToast(message);
+const renderProducts = (items) => {
+  productGrid.innerHTML = "";
+  if (!items.length) {
+    productGrid.innerHTML =
+      "<article class='empty-state'><h3>Sin resultados</h3><p>Prueba combinando otros filtros o limpiando la búsqueda.</p></article>";
+    updateResultsLabel(0);
+    return;
+  }
+
+  updateResultsLabel(items.length);
+
+  items.forEach((product) => {
+    const card = document.createElement("article");
+    card.className = "product-card";
+    card.innerHTML = `
+      <img class="product-image" src="${product.image}" alt="${product.name}" loading="lazy" decoding="async" />
+      <div class="product-header">
+        <span>${product.location}</span>
+        <span class="badge">${product.condition}</span>
+      </div>
+      <div>
+        <h3 class="product-title">${product.name}</h3>
+        <p class="product-meta">
+          <span>${product.seller}</span>
+          <span>★ ${product.rating.toFixed(1)}</span>
+        </p>
+      </div>
+      <p class="product-price">${currency.format(product.price)}</p>
+      <div class="product-actions">
+        <button class="btn primary" data-id="${product.id}" type="button">Ver detalle</button>
+        <button class="btn ghost" data-save="${product.id}" type="button">Guardar</button>
+      </div>
+    `;
+    productGrid.appendChild(card);
   });
+};
+
+const applyFilters = () => {
+  const searchValue = searchInput.value.trim().toLowerCase();
+  const stageValue = stageSelect.value;
+  const categoryValue = categorySelect.value;
+
+  const filtered = products.filter((product) => {
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchValue) ||
+      product.description.toLowerCase().includes(searchValue) ||
+      product.seller.toLowerCase().includes(searchValue);
+
+    const matchesStage = !stageValue || product.stage === stageValue;
+    const matchesCategory = !categoryValue || product.category === categoryValue;
+    return matchesSearch && matchesStage && matchesCategory;
+  });
+
+  renderProducts(getSortedProducts(filtered));
+};
+
+const openModal = (productId) => {
+  const product = products.find((item) => item.id === productId);
+  if (!product) return;
+
+  modalBody.innerHTML = `
+    <img class="modal-product-image" src="${product.image}" alt="${product.name}" loading="lazy" decoding="async" />
+    <h2>${product.name}</h2>
+    <p>${product.description}</p>
+    <div class="product-meta">
+      <span>Etapa: ${product.stage}</span>
+      <span>Categoría: ${product.category}</span>
+    </div>
+    <div class="product-meta">
+      <span>Ubicación: ${product.location}</span>
+      <span>Vendedor: ${product.seller}</span>
+    </div>
+    <p class="product-price">${currency.format(product.price)}</p>
+    <div class="hero-actions">
+      <button class="btn primary" type="button">Comprar ahora</button>
+      <button class="btn secondary" type="button">Contactar vendedor</button>
+    </div>
+  `;
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+};
+
+const closeModalView = () => {
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+};
+
+const setActiveQuickChip = (stage) => {
+  const chips = quickFilters.querySelectorAll(".chip");
+  chips.forEach((chip) => {
+    chip.classList.toggle("active", chip.dataset.stage === stage);
+  });
+};
+
+quickFilters.addEventListener("click", (event) => {
+  const chip = event.target.closest(".chip");
+  if (!chip) return;
+  const stage = chip.dataset.stage;
+  stageSelect.value = stage;
+  setActiveQuickChip(stage);
+  applyFilters();
 });
 
-if (authCard) {
-  const damp = (value, amount = 14) => value / amount;
+productGrid.addEventListener("click", (event) => {
+  const detailButton = event.target.closest("button[data-id]");
+  const saveButton = event.target.closest("button[data-save]");
 
-  document.addEventListener("mousemove", (event) => {
-    const { innerWidth, innerHeight } = window;
-    const xRatio = event.clientX / innerWidth - 0.5;
-    const yRatio = event.clientY / innerHeight - 0.5;
-    authCard.style.transform = `rotateX(${damp(-yRatio * 10)}deg) rotateY(${damp(xRatio * 12)}deg)`;
-  });
+  if (detailButton) {
+    openModal(Number(detailButton.dataset.id));
+    return;
+  }
 
-  document.addEventListener("mouseleave", () => {
-    authCard.style.transform = "rotateX(0deg) rotateY(0deg)";
+  if (saveButton) {
+    showToast("Producto guardado en tu lista ✨");
+  }
+});
+
+searchInput.addEventListener("input", applyFilters);
+stageSelect.addEventListener("change", () => {
+  setActiveQuickChip(stageSelect.value);
+  applyFilters();
+});
+categorySelect.addEventListener("change", applyFilters);
+sortSelect.addEventListener("change", applyFilters);
+
+resetFilters.addEventListener("click", () => {
+  searchInput.value = "";
+  stageSelect.value = "";
+  categorySelect.value = "";
+  sortSelect.value = "featured";
+  setActiveQuickChip("");
+  applyFilters();
+  showToast("Filtros restablecidos");
+});
+
+closeModal.addEventListener("click", closeModalView);
+modal.addEventListener("click", (event) => {
+  if (event.target === modal) closeModalView();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeModalView();
+  }
+});
+
+if (loginForm) {
+  loginForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    showToast("Acceso simulado correctamente ✅");
   });
 }
 
-if (networkCanvas) {
-  const ctx = networkCanvas.getContext("2d");
-  let width = 0;
-  let height = 0;
-  const mouse = { x: -9999, y: -9999, active: false };
-  const nodeCount = 36;
-  const linkDistance = 180;
-
-  const typeColors = {
-    colegio: "rgba(91, 128, 205, 0.95)",
-    familia: "rgba(127, 158, 220, 0.95)",
-    producto: "rgba(157, 184, 238, 0.95)",
+if (themeToggle) {
+  const syncThemeToggleState = () => {
+    const isDark = document.body.classList.contains("dark");
+    themeToggle.setAttribute("aria-pressed", String(isDark));
+    themeToggle.setAttribute("aria-label", isDark ? "Activar modo día" : "Activar modo oscuro");
   };
 
-  const labels = ["colegio", "familia", "producto"];
-
-  const nodes = Array.from({ length: nodeCount }, (_, index) => {
-    const kind = labels[index % labels.length];
-    return {
-      x: 0,
-      y: 0,
-      vx: (Math.random() - 0.5) * 0.34,
-      vy: (Math.random() - 0.5) * 0.34,
-      radius: 2.2 + Math.random() * 1.4,
-      kind,
-      pulse: Math.random() * Math.PI * 2,
-    };
+  themeToggle.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+    const isDark = document.body.classList.contains("dark");
+    localStorage.setItem("kuoia-theme", isDark ? "dark" : "light");
+    syncThemeToggleState();
   });
 
-  const resize = () => {
-    const dpr = window.devicePixelRatio || 1;
-    width = window.innerWidth;
-    height = window.innerHeight;
-    networkCanvas.width = Math.floor(width * dpr);
-    networkCanvas.height = Math.floor(height * dpr);
-    networkCanvas.style.width = `${width}px`;
-    networkCanvas.style.height = `${height}px`;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const storedTheme = localStorage.getItem("kuoia-theme");
+  if (storedTheme === "dark") {
+    document.body.classList.add("dark");
+  }
 
-    nodes.forEach((node) => {
-      if (!node.x || !node.y) {
-        node.x = Math.random() * width;
-        node.y = Math.random() * height;
+  syncThemeToggleState();
+}
+
+const counterElements = document.querySelectorAll("[data-counter]");
+counterElements.forEach((counter) => {
+  const target = Number(counter.dataset.counter);
+  const increment = target / 35;
+  let current = 0;
+  const timer = setInterval(() => {
+    current += increment;
+    if (current >= target) {
+      clearInterval(timer);
+      if (target < 10) {
+        counter.textContent = `${target.toFixed(1)}/5`;
+      } else if (target >= 1000) {
+        counter.textContent = `${(target / 1000).toFixed(1)}K`;
+      } else {
+        counter.textContent = Math.round(target).toString();
       }
-    });
-  };
-
-  const draw = () => {
-    ctx.clearRect(0, 0, width, height);
-
-    for (let i = 0; i < nodes.length; i += 1) {
-      const a = nodes[i];
-      for (let j = i + 1; j < nodes.length; j += 1) {
-        const b = nodes[j];
-        const dx = a.x - b.x;
-        const dy = a.y - b.y;
-        const dist = Math.hypot(dx, dy);
-        if (dist < linkDistance) {
-          const opacity = (1 - dist / linkDistance) * 0.5;
-          ctx.strokeStyle = `rgba(120, 151, 223, ${opacity})`;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-        }
-      }
+      return;
     }
 
-    nodes.forEach((node) => {
-      node.pulse += 0.03;
-      const pulseRadius = node.radius + Math.sin(node.pulse) * 0.35;
-      ctx.fillStyle = typeColors[node.kind];
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, pulseRadius, 0, Math.PI * 2);
-      ctx.fill();
+    if (target < 10) {
+      counter.textContent = `${current.toFixed(1)}/5`;
+    } else if (target >= 1000) {
+      counter.textContent = `${(current / 1000).toFixed(1)}K`;
+    } else {
+      counter.textContent = Math.round(current).toString();
+    }
+  }, 26);
+});
 
-      ctx.beginPath();
-      ctx.strokeStyle = "rgba(181, 202, 245, 0.55)";
-      ctx.lineWidth = 1;
-      ctx.arc(node.x, node.y, pulseRadius + 2.2, 0, Math.PI * 2);
-      ctx.stroke();
-    });
-  };
-
-  const update = () => {
-    nodes.forEach((node) => {
-      node.x += node.vx;
-      node.y += node.vy;
-
-      if (node.x <= 0 || node.x >= width) node.vx *= -1;
-      if (node.y <= 0 || node.y >= height) node.vy *= -1;
-
-      if (mouse.active) {
-        const dx = mouse.x - node.x;
-        const dy = mouse.y - node.y;
-        const dist = Math.hypot(dx, dy);
-        if (dist < 140 && dist > 0.001) {
-          const force = (140 - dist) / 140;
-          node.vx -= (dx / dist) * force * 0.02;
-          node.vy -= (dy / dist) * force * 0.02;
-        }
-      }
-
-      node.vx *= 0.992;
-      node.vy *= 0.992;
-
-      if (node.vx > 0.42) node.vx = 0.42;
-      if (node.vx < -0.42) node.vx = -0.42;
-      if (node.vy > 0.42) node.vy = 0.42;
-      if (node.vy < -0.42) node.vy = -0.42;
-    });
-  };
-
-  const animate = () => {
-    update();
-    draw();
-    requestAnimationFrame(animate);
-  };
-
-  window.addEventListener("resize", resize);
-  window.addEventListener("mousemove", (event) => {
-    mouse.x = event.clientX;
-    mouse.y = event.clientY;
-    mouse.active = true;
-  });
-  window.addEventListener("mouseout", () => {
-    mouse.active = false;
-  });
-
-  resize();
-  animate();
-}
+document.getElementById("currentYear").textContent = new Date().getFullYear();
+applyFilters();

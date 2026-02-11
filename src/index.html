@@ -3,83 +3,248 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kuoia | Acceso</title>
+    <title>Kuoia | Marketplace educativo</title>
     <meta
       name="description"
-      content="Pantalla de acceso de Kuoia con estilo limpio, claro y profesional."
+      content="Marketplace educativo para comprar y vender recursos escolares con filtros inteligentes y una experiencia visual premium."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="background-layer" aria-hidden="true">
-      <canvas id="networkCanvas" class="network-canvas"></canvas>
-      <span class="blob blob-1"></span>
-      <span class="blob blob-2"></span>
-    </div>
+    <header class="hero" id="top">
+      <nav class="nav">
+        <a href="#top" class="logo" aria-label="Inicio Kuoia">
+          <img src="assets/kuoia-logo.svg" alt="Kuoia" class="logo-mark" />
+          <span>Kuoia</span>
+        </a>
+        <div class="nav-links">
+          <a href="#market">Mercado</a>
+          <a href="#benefits">Beneficios</a>
+          <a href="#community">Comunidad</a>
+        </div>
+        <div class="nav-actions">
+          <button id="themeToggle" class="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false">
+            <span class="theme-toggle-track">
+              <span class="theme-icon sun" aria-hidden="true">☀️</span>
+              <span class="theme-thumb"></span>
+              <span class="theme-icon moon" aria-hidden="true">🌙</span>
+            </span>
+          </button>
+          <button class="btn ghost" type="button">Iniciar sesión</button>
+        </div>
+      </nav>
 
-    <header class="topbar">
-      <a href="#" class="logo" aria-label="Inicio Kuoia">
-        <img src="assets/kuoia-logo.svg" alt="Kuoia" class="logo-mark" />
-        <span>Kuoia</span>
-      </a>
+      <div class="hero-gif" aria-hidden="true"></div>
+      <div class="hero-bg" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <div class="hero-content">
+        <div class="hero-text">
+          <p class="tag">Marketplace educativo inteligente</p>
+          <h1>Compra y vende recursos educativos con una experiencia elegante.</h1>
+          <p>
+            Kuoia conecta centros, docentes y familias para reutilizar materiales, descubrir kits
+            pedagógicos y activar proyectos con impacto real en el aprendizaje.
+          </p>
+          <div class="hero-actions">
+            <a href="#market" class="btn primary">Publicar producto</a>
+            <a href="#market" class="btn secondary">Explorar catálogo</a>
+          </div>
+          <div class="hero-stats">
+            <div>
+              <strong data-counter="4.8">4.8/5</strong>
+              <span>valoración promedio</span>
+            </div>
+            <div>
+              <strong data-counter="2100">2.1K</strong>
+              <span>productos listados</span>
+            </div>
+            <div>
+              <strong data-counter="680">680</strong>
+              <span>centros activos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-panel">
+          <div class="hero-login">
+            <div class="login-header">
+              <span class="eyebrow">Acceso Kuoia</span>
+              <h3>Inicia sesión</h3>
+              <p>Gestiona tus publicaciones, ventas y listas guardadas en segundos.</p>
+            </div>
+            <form class="login-form" id="loginForm">
+              <label>
+                Correo
+                <input type="email" placeholder="tu@email.com" required />
+              </label>
+              <label>
+                Contraseña
+                <input type="password" placeholder="••••••••" required />
+              </label>
+              <div class="login-actions">
+                <button class="btn primary full" type="submit">Entrar</button>
+                <button class="btn ghost full" type="button">Continuar con Google</button>
+              </div>
+              <div class="login-footer">
+                <a href="#">¿Olvidaste tu contraseña?</a>
+                <span>¿Nuevo aquí? <a href="#">Crear cuenta</a></span>
+              </div>
+            </form>
+          </div>
+
+          <div class="hero-card">
+            <h3>Tu panel rápido</h3>
+            <div class="hero-card-row">
+              <span>Ingresos del mes</span>
+              <strong>€2.450</strong>
+            </div>
+            <div class="hero-card-row">
+              <span>Pedidos enviados</span>
+              <strong>38</strong>
+            </div>
+            <div class="hero-card-row">
+              <span>Solicitudes abiertas</span>
+              <strong>12</strong>
+            </div>
+            <div class="hero-card-footer">
+              <button class="btn secondary full" type="button">Ver oportunidades</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </header>
 
-    <main class="auth-shell">
-      <section class="auth-card" id="authCard" aria-label="Acceso de usuario">
-        <div class="auth-header">
-          <p class="eyebrow">Bienvenido a Kuoia</p>
-          <h1>Accede a tu cuenta</h1>
-          <p class="subtitle">Todo en un solo lugar para colegios, familias y recursos educativos.</p>
+    <main>
+      <section class="filters" id="market">
+        <div class="filters-headline">
+          <h2>Encuentra el material perfecto</h2>
+          <p>Filtra por etapa, tipo de recurso y necesidades específicas.</p>
         </div>
 
-        <div class="auth-toggle" role="tablist" aria-label="Seleccionar panel de acceso">
-          <button class="toggle-btn active" id="loginTab" role="tab" aria-selected="true" aria-controls="loginPanel" type="button">
-            Iniciar sesión
-          </button>
-          <button class="toggle-btn" id="registerTab" role="tab" aria-selected="false" aria-controls="registerPanel" type="button">
-            Crear usuario
-          </button>
+        <div class="filter-grid">
+          <div class="search-box">
+            <input id="searchInput" type="text" placeholder="Busca libros, kits STEAM, mobiliario..." />
+          </div>
+
+          <select id="stageSelect" aria-label="Filtrar por etapa educativa">
+            <option value="">Etapa educativa</option>
+            <option value="infantil">Infantil</option>
+            <option value="primaria">Primaria</option>
+            <option value="secundaria">Secundaria</option>
+            <option value="bachillerato">Bachillerato</option>
+            <option value="especial">Necesidades especiales</option>
+          </select>
+
+          <select id="categorySelect" aria-label="Filtrar por categoría">
+            <option value="">Categoría</option>
+            <option value="libros">Libros y lecturas</option>
+            <option value="tecnologia">Tecnología</option>
+            <option value="mobiliario">Mobiliario</option>
+            <option value="didactico">Material didáctico</option>
+            <option value="arte">Arte y creatividad</option>
+          </select>
+
+          <select id="sortSelect" aria-label="Ordenar productos">
+            <option value="featured">Ordenar: Destacados</option>
+            <option value="price-asc">Precio: menor a mayor</option>
+            <option value="price-desc">Precio: mayor a menor</option>
+            <option value="rating-desc">Valoración: mejor valorados</option>
+          </select>
         </div>
 
-        <div class="auth-panels">
-          <form class="auth-form active" id="loginPanel" role="tabpanel" aria-labelledby="loginTab">
-            <label>
-              Correo electrónico
-              <input type="email" placeholder="tu@email.com" required />
-            </label>
-            <label>
-              Contraseña
-              <input type="password" placeholder="••••••••" required />
-            </label>
-            <button class="btn btn-primary" type="submit">Entrar</button>
-          </form>
+        <div class="quick-filters" id="quickFilters">
+          <button class="chip active" data-stage="">Todos</button>
+          <button class="chip" data-stage="infantil">Infantil</button>
+          <button class="chip" data-stage="primaria">Primaria</button>
+          <button class="chip" data-stage="secundaria">Secundaria</button>
+          <button class="chip" data-stage="especial">Inclusión</button>
+        </div>
 
-          <form class="auth-form" id="registerPanel" role="tabpanel" aria-labelledby="registerTab" hidden>
-            <label>
-              Nombre completo
-              <input type="text" placeholder="Nombre Apellido" required />
-            </label>
-            <label>
-              Correo electrónico
-              <input type="email" placeholder="tu@email.com" required />
-            </label>
-            <label>
-              Crear contraseña
-              <input type="password" placeholder="Mínimo 8 caracteres" required />
-            </label>
-            <button class="btn btn-primary" type="submit">Crear cuenta</button>
-          </form>
+        <div class="results-bar">
+          <p id="resultCount">0 resultados</p>
+          <button id="resetFilters" class="btn ghost" type="button">Limpiar filtros</button>
+        </div>
+      </section>
+
+      <section class="market-grid" id="productGrid"></section>
+
+      <section class="benefits" id="benefits">
+        <div class="benefits-header">
+          <h2>Una experiencia pensada para la comunidad educativa</h2>
+          <p>
+            Desde la publicación inteligente hasta la logística colaborativa, todo está diseñado
+            para ahorrar tiempo y maximizar impacto.
+          </p>
+        </div>
+        <div class="benefits-grid">
+          <article>
+            <h3>Publicaciones guiadas</h3>
+            <p>Plantillas que ayudan a describir estado, nivel y uso pedagógico del recurso.</p>
+          </article>
+          <article>
+            <h3>Pagos seguros</h3>
+            <p>Escrow con liberación de fondos cuando el material llega al centro o familia.</p>
+          </article>
+          <article>
+            <h3>Logística compartida</h3>
+            <p>Rutas agrupadas entre centros cercanos para reducir costes y huella de carbono.</p>
+          </article>
+          <article>
+            <h3>Recomendaciones inteligentes</h3>
+            <p>Motor de afinidad por proyecto educativo, presupuesto y experiencia previa.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="community" id="community">
+        <div>
+          <h2>Conecta con una red de confianza</h2>
+          <p>Centros, AMPAs y docentes certificados comparten valoraciones y listas colaborativas.</p>
+        </div>
+        <div class="community-card">
+          <div>
+            <strong>Top búsqueda hoy</strong>
+            <p>Kit de laboratorio básico + microscopio digital</p>
+          </div>
+          <button class="btn secondary" type="button">Crear lista compartida</button>
         </div>
       </section>
     </main>
 
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <footer class="footer">
+      <div>
+        <a href="#top" class="logo">
+          <img src="assets/kuoia-logo.svg" alt="Kuoia" class="logo-mark" />
+          <span>Kuoia</span>
+        </a>
+        <p>Marketplace educativo para comprar, vender y reutilizar recursos.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#">Ayuda</a>
+        <a href="#">Seguridad</a>
+        <a href="#">Términos</a>
+      </div>
+      <small>© <span id="currentYear"></span> Kuoia. Diseñado para educar en comunidad.</small>
+    </footer>
+
+    <div class="modal" id="productModal" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <button class="close-modal" id="closeModal" type="button" aria-label="Cerrar modal">×</button>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" aria-live="polite"></div>
 
     <script src="app.js"></script>
   </body>
