@@ -2,19 +2,30 @@
 
 Marketplace educativo inspirado en modelos como Vinted y Wallapop, enfocado en la compra/venta de materiales y recursos para centros, docentes y familias.
 
-## Vista rápida
+## Qué incluye esta versión
 
-- Búsqueda y filtros por etapa y categoría.
-- Catálogo dinámico con detalles y modal.
-- Secciones de beneficios y comunidad para dar contexto de valor.
+- Diseño visual renovado (look limpio, elegante y moderno).
+- Filtros dinámicos por búsqueda, etapa y categoría.
+- Chips rápidos para filtrar por etapa en un clic.
+- Ordenación por precio y valoración.
+- Modal de detalle de producto, toast de feedback y login simulado.
+- Modo oscuro con persistencia en `localStorage`.
 
-## Uso
+## Ejecutar en local
 
-1. Abre `src/index.html` en tu navegador.
-2. Explora el catálogo y usa los filtros para ver el comportamiento dinámico.
+```bash
+python3 -m http.server 4173 --directory src
+```
+
+Luego abre `http://localhost:4173`.
+
+## Deploy en Vercel
+
+Este repositorio ya incluye `vercel.json` para servir la app estática directamente desde `src/`.
 
 ## Estructura
 
 - `src/index.html`: estructura principal.
-- `src/styles.css`: estilos y layout.
-- `src/app.js`: datos de ejemplo y lógica de filtros.
+- `src/styles.css`: estilos, temas y responsive.
+- `src/app.js`: catálogo de ejemplo y lógica dinámica.
+- `vercel.json`: configuración de despliegue en Vercel.
