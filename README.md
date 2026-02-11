@@ -21,7 +21,7 @@ Luego abre `http://localhost:4173`.
 
 ## Deploy en Vercel
 
-Este repositorio ya incluye `vercel.json` para servir la app estática directamente desde `src/`.
+Este repositorio ya incluye `vercel.json` con rewrites para servir `src/index.html` en `/` y exponer los assets de `src/` correctamente en Vercel.
 
 ## Estructura
 
