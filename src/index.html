@@ -41,8 +41,14 @@
           <section class="auth-card" id="authCard" aria-label="Acceso de usuario">
             <div class="auth-header">
               <p class="eyebrow">Bienvenido a Kuoia</p>
-              <h1>Accede a tu cuenta</h1>
+              <h1>Regístrate y empieza a vender o comprar</h1>
               <p class="subtitle">Todo en un solo lugar para colegios, familias y recursos educativos.</p>
+            </div>
+
+            <div class="register-highlights" aria-hidden="true">
+              <span>✨ Registro rápido</span>
+              <span>🛍️ Inicio con productos</span>
+              <span>🧾 Suscripciones flexibles</span>
             </div>
 
             <div class="auth-toggle" role="tablist" aria-label="Seleccionar panel de acceso">
@@ -97,6 +103,10 @@
                   Contraseña
                   <input type="password" name="password" placeholder="Mínimo 8 caracteres" minlength="8" required />
                 </label>
+                <label class="register-checkbox">
+                  <input type="checkbox" name="terms" required />
+                  <span>Acepto términos y políticas de uso de Kuoia.</span>
+                </label>
                 <button class="btn btn-primary" type="submit">Crear cuenta</button>
               </form>
             </div>
@@ -115,6 +125,7 @@
             <h2>Suscripciones Kuoia para cada necesidad</h2>
             <p class="subtitle">Compara funciones, precios y escala cuando quieras.</p>
           </div>
+          <button class="btn btn-secondary" id="subscriptionsBackButton" type="button">Volver</button>
         </header>
         <div class="plans-grid">
           <article class="plan-card plan-gray">
@@ -125,7 +136,7 @@
               <li>1 perfil de usuario</li>
               <li>Soporte por email</li>
             </ul>
-            <button class="btn btn-primary" type="button">Suscribirse al plan</button>
+            <button class="btn btn-primary plan-select-btn" type="button" data-plan="Esencial">Suscribirse al plan</button>
           </article>
           <article class="plan-card plan-green">
             <h3>Verde · Básico</h3>
@@ -135,7 +146,7 @@
               <li>Hasta 5 perfiles</li>
               <li>Automatizaciones iniciales</li>
             </ul>
-            <button class="btn btn-primary" type="button">Suscribirse al plan</button>
+            <button class="btn btn-primary plan-select-btn" type="button" data-plan="Básico">Suscribirse al plan</button>
           </article>
           <article class="plan-card plan-blue">
             <h3>Azul · Premium</h3>
@@ -145,7 +156,22 @@
               <li>Usuarios ilimitados</li>
               <li>Analíticas, API y soporte prioritario</li>
             </ul>
-            <button class="btn btn-primary" type="button">Suscribirse al plan</button>
+            <button class="btn btn-primary plan-select-btn" type="button" data-plan="Premium">Suscribirse al plan</button>
+          </article>
+        </div>
+
+        <div class="plan-columns" aria-label="Comparativa de planes en columnas">
+          <article>
+            <h4>Esencial</h4>
+            <p>Ideal para empezar.</p>
+          </article>
+          <article>
+            <h4>Básico</h4>
+            <p>Para centros en crecimiento.</p>
+          </article>
+          <article>
+            <h4>Premium</h4>
+            <p>Todo desbloqueado para escalar.</p>
           </article>
         </div>
       </section>
@@ -157,7 +183,10 @@
             <h2>Recursos y productos de la comunidad</h2>
             <p class="subtitle" id="welcomeMessage">Explora lo que la comunidad comparte hoy.</p>
           </div>
-          <button class="btn btn-secondary" id="logoutButton" type="button">Cerrar sesión</button>
+          <div class="header-actions">
+            <button class="btn btn-secondary" id="profileButton" type="button">Perfil</button>
+            <button class="btn btn-secondary" id="logoutButton" type="button">Cerrar sesión</button>
+          </div>
         </div>
 
         <div class="marketplace-layout">
@@ -213,6 +242,42 @@
             <div class="marketplace-grid" id="marketplaceGrid"></div>
             <p class="empty-state hidden" id="emptyState">No se encontraron productos con esos filtros.</p>
           </section>
+        </div>
+      </section>
+
+      <section class="profile-view hidden" id="profileView" aria-label="Perfil de la cuenta dentro de Kuoia">
+        <div class="profile-card">
+          <div>
+            <p class="eyebrow">Tu perfil de Kuoia</p>
+            <h2>Configuración de tu cuenta</h2>
+            <p class="subtitle">Esta pantalla pertenece a la app y no abre tu perfil personal externo.</p>
+          </div>
+          <form id="profileForm" class="profile-form">
+            <label>
+              Nombre visible
+              <input type="text" name="displayName" placeholder="Ej: Colegio San Miguel" required />
+            </label>
+            <label>
+              Rol
+              <select name="role" required>
+                <option value="centro-educativo">Centro educativo</option>
+                <option value="particular">Particular</option>
+                <option value="docente">Docente</option>
+              </select>
+            </label>
+            <label>
+              Ciudad
+              <input type="text" name="city" placeholder="Tu localidad" required />
+            </label>
+            <label>
+              Plan actual
+              <input type="text" name="currentPlan" id="currentPlanInput" readonly />
+            </label>
+            <div class="profile-actions">
+              <button class="btn btn-primary" type="submit">Guardar perfil</button>
+              <button class="btn btn-secondary" id="profileBackButton" type="button">Volver al inicio</button>
+            </div>
+          </form>
         </div>
       </section>
     </main>
