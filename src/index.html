@@ -3,13 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kuoia | Acceso</title>
+    <title>Kuoia | Registro</title>
     <meta
       name="description"
-      content="Pantalla de acceso de Kuoia con estilo limpio, claro y profesional."
+      content="Pantalla moderna de login y registro para Kuoia con animaciones suaves."
     />
-    <meta name="supabase-url" content="https://mmgnwvxzjyaowukeudan.supabase.co" />
-    <meta name="supabase-anon-key" content="sb_publishable_JaBwfDNhZEsVIn85l7odZQ_xB2jWygb" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -19,206 +17,73 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="background-layer" aria-hidden="true">
-      <canvas id="networkCanvas" class="network-canvas"></canvas>
-      <span class="blob blob-1"></span>
-      <span class="blob blob-2"></span>
-    </div>
+    <main class="page-shell">
+      <section class="auth-card" id="authCard" aria-label="Acceso y registro Kuoia">
+        <header class="card-header">
+          <div class="logo-badge" aria-hidden="true">K</div>
+          <h1>Crea tu cuenta</h1>
+          <p>Regístrese en Kuoia para continuar</p>
+        </header>
 
-    <header class="topbar">
-      <a href="#" class="logo" aria-label="Inicio Kuoia">
-        <img src="assets/kuoia-logo.svg" alt="Kuoia" class="logo-mark" />
-        <span>Kuoia</span>
-      </a>
-      <button class="btn btn-secondary topbar-cta hidden" id="topbarAuthCta" type="button">
-        Entrar o registrarse
-      </button>
-    </header>
-
-    <main>
-      <section class="auth-shell" id="authView">
-        <div class="auth-stack">
-          <section class="auth-card" id="authCard" aria-label="Acceso de usuario">
-            <div class="auth-header">
-              <p class="eyebrow">Bienvenido a Kuoia</p>
-              <h1>Accede a tu cuenta</h1>
-              <p class="subtitle">Todo en un solo lugar para colegios, familias y recursos educativos.</p>
-            </div>
-
-            <div class="auth-toggle" role="tablist" aria-label="Seleccionar panel de acceso">
-              <button class="toggle-btn active" id="loginTab" role="tab" aria-selected="true" aria-controls="loginPanel" type="button">
-                Iniciar sesión
-              </button>
-              <button class="toggle-btn" id="registerTab" role="tab" aria-selected="false" aria-controls="registerPanel" type="button">
-                Crear usuario
-              </button>
-            </div>
-
-            <div class="auth-panels">
-              <form class="auth-form active" id="loginPanel" role="tabpanel" aria-labelledby="loginTab">
-                <label>
-                  Correo electrónico
-                  <input type="email" name="email" placeholder="tu@email.com" required />
-                </label>
-                <label>
-                  Contraseña
-                  <input type="password" name="password" placeholder="••••••••" required />
-                </label>
-                <button class="btn btn-primary" type="submit">Entrar</button>
-              </form>
-
-              <form class="auth-form" id="registerPanel" role="tabpanel" aria-labelledby="registerTab" hidden>
-                <label>
-                  Nombre
-                  <input type="text" name="firstName" placeholder="Tu nombre" required />
-                </label>
-                <label>
-                  Apellidos
-                  <input type="text" name="lastName" placeholder="Tus apellidos" required />
-                </label>
-                <label>
-                  Identidad
-                  <select name="identity" required>
-                    <option value="" selected disabled>Selecciona una opción</option>
-                    <option value="centro-educativo">Centro educativo</option>
-                    <option value="particular">Particular</option>
-                    <option value="docente">Docente</option>
-                  </select>
-                </label>
-                <label>
-                  Localidad
-                  <input type="text" name="location" placeholder="Tu localidad" required />
-                </label>
-                <label>
-                  Correo electrónico
-                  <input type="email" name="email" placeholder="tu@email.com" required />
-                </label>
-                <label>
-                  Contraseña
-                  <input type="password" name="password" placeholder="Mínimo 8 caracteres" minlength="8" required />
-                </label>
-                <button class="btn btn-primary" type="submit">Crear cuenta</button>
-              </form>
-            </div>
-          </section>
-
-          <button class="floating-subscriptions-btn" id="subscriptionsButton" type="button">
-            Suscripciones
+        <div class="social-actions">
+          <button class="social-btn" type="button">
+            <span class="social-icon google" aria-hidden="true">G</span>
+            Continuar con Google
+          </button>
+          <button class="social-btn" type="button">
+            <span class="social-icon microsoft" aria-hidden="true">M</span>
+            Continuar con Microsoft Account
           </button>
         </div>
-      </section>
 
-      <section class="subscriptions-view hidden" id="subscriptionsView" aria-label="Planes de suscripción">
-        <header class="subscriptions-header">
-          <div>
-            <p class="eyebrow">Elige tu plan</p>
-            <h2>Suscripciones Kuoia para cada necesidad</h2>
-            <p class="subtitle">Compara funciones, precios y escala cuando quieras.</p>
-          </div>
-        </header>
-        <div class="plans-grid">
-          <article class="plan-card plan-gray">
-            <h3>Gris · Esencial</h3>
-            <p class="plan-price">9€<span>/mes</span></p>
-            <ul>
-              <li>Acceso básico al catálogo</li>
-              <li>1 perfil de usuario</li>
-              <li>Soporte por email</li>
-            </ul>
-            <button class="btn btn-primary" type="button">Suscribirse al plan</button>
-          </article>
-          <article class="plan-card plan-green">
-            <h3>Verde · Básico</h3>
-            <p class="plan-price">19€<span>/mes</span></p>
-            <ul>
-              <li>Todo lo del plan Esencial</li>
-              <li>Hasta 5 perfiles</li>
-              <li>Automatizaciones iniciales</li>
-            </ul>
-            <button class="btn btn-primary" type="button">Suscribirse al plan</button>
-          </article>
-          <article class="plan-card plan-blue">
-            <h3>Azul · Premium</h3>
-            <p class="plan-price">39€<span>/mes</span></p>
-            <ul>
-              <li>Funciones avanzadas premium</li>
-              <li>Usuarios ilimitados</li>
-              <li>Analíticas, API y soporte prioritario</li>
-            </ul>
-            <button class="btn btn-primary" type="button">Suscribirse al plan</button>
-          </article>
-        </div>
-      </section>
-
-      <section class="marketplace hidden" id="marketplaceView" aria-label="Pantalla principal dinámica">
-        <div class="marketplace-header">
-          <div>
-            <p class="eyebrow">Panel principal</p>
-            <h2>Recursos y productos de la comunidad</h2>
-            <p class="subtitle" id="welcomeMessage">Explora lo que la comunidad comparte hoy.</p>
-          </div>
-          <button class="btn btn-secondary" id="logoutButton" type="button">Cerrar sesión</button>
+        <div class="divider" role="separator" aria-label="o">
+          <span>o</span>
         </div>
 
-        <div class="marketplace-layout">
-          <aside class="filters-panel">
-            <h3>Filtros</h3>
-            <label class="search-label" for="searchInput">
-              Buscador
-              <input id="searchInput" type="search" placeholder="Busca por producto, recurso o vendedor" />
-            </label>
+        <form class="auth-form" id="authForm">
+          <label class="input-wrap">
+            <span class="sr-only">Correo electrónico</span>
+            <input type="email" name="email" placeholder="Correo electrónico*" required />
+          </label>
 
-            <label class="filter-label" for="locationFilter">
-              Localidad
-              <select id="locationFilter">
-                <option value="">Todas</option>
-                <option value="madrid">Madrid</option>
-                <option value="barcelona">Barcelona</option>
-                <option value="valencia">Valencia</option>
-                <option value="sevilla">Sevilla</option>
+          <div class="extra-fields" id="extraFields" aria-hidden="true">
+            <label class="input-wrap">
+              <span class="sr-only">Nombre completo</span>
+              <input type="text" name="fullName" placeholder="Nombre completo" />
+            </label>
+            <label class="input-wrap">
+              <span class="sr-only">Apellidos</span>
+              <input type="text" name="lastName" placeholder="Apellidos" />
+            </label>
+            <label class="input-wrap">
+              <span class="sr-only">Contraseña</span>
+              <input type="password" name="password" placeholder="Contraseña" />
+            </label>
+            <label class="input-wrap">
+              <span class="sr-only">Confirmar contraseña</span>
+              <input type="password" name="confirmPassword" placeholder="Confirmar contraseña" />
+            </label>
+            <label class="input-wrap">
+              <span class="sr-only">Tipo de usuario</span>
+              <select name="userType">
+                <option value="" selected disabled>Selector tipo de usuario</option>
+                <option value="familia">Familia</option>
+                <option value="docente">Docente</option>
+                <option value="centro">Centro</option>
               </select>
             </label>
+          </div>
 
-            <label class="filter-label" for="centerFilter">
-              Centro educativo
-              <select id="centerFilter">
-                <option value="">Todos</option>
-                <option value="publico">Público</option>
-                <option value="concertado">Concertado</option>
-                <option value="privado">Privado</option>
-              </select>
-            </label>
+          <button class="primary-btn" id="submitBtn" type="submit">Continuar</button>
+        </form>
 
-            <label class="filter-label" for="typeFilter">
-              Tipo
-              <select id="typeFilter">
-                <option value="">Todos</option>
-                <option value="producto">Producto</option>
-                <option value="recurso">Recurso</option>
-                <option value="servicio">Servicio</option>
-              </select>
-            </label>
-
-            <label class="filter-label" for="priceRange">
-              Precio máximo
-              <div class="range-wrap">
-                <input id="priceRange" type="range" min="5" max="400" step="5" value="400" />
-                <strong id="priceRangeValue">Hasta 400 €</strong>
-              </div>
-            </label>
-          </aside>
-
-          <section class="products-panel">
-            <div class="results-meta" id="resultsMeta">Mostrando 0 resultados.</div>
-            <div class="marketplace-grid" id="marketplaceGrid"></div>
-            <p class="empty-state hidden" id="emptyState">No se encontraron productos con esos filtros.</p>
-          </section>
+        <div class="card-footer">
+          <a href="#" class="muted-link">¿Ya tiene una cuenta? Iniciar sesión</a>
+          <button id="newUserBtn" class="text-btn" type="button">Crear nuevo usuario</button>
         </div>
       </section>
     </main>
 
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-    <script type="module" src="app.js"></script>
+    <script src="app.js"></script>
   </body>
 </html>
