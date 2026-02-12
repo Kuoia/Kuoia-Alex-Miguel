@@ -3,11 +3,16 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const authCard = document.getElementById("authCard");
 const authView = document.getElementById("authView");
 const marketplaceView = document.getElementById("marketplaceView");
+const profileView = document.getElementById("profileView");
 const loginTab = document.getElementById("loginTab");
 const registerTab = document.getElementById("registerTab");
 const loginPanel = document.getElementById("loginPanel");
 const registerPanel = document.getElementById("registerPanel");
 const logoutButton = document.getElementById("logoutButton");
+const profileButton = document.getElementById("profileButton");
+const profileBackButton = document.getElementById("profileBackButton");
+const profileForm = document.getElementById("profileForm");
+const currentPlanInput = document.getElementById("currentPlanInput");
 const searchInput = document.getElementById("searchInput");
 const locationFilter = document.getElementById("locationFilter");
 const centerFilter = document.getElementById("centerFilter");
@@ -21,12 +26,17 @@ const emptyState = document.getElementById("emptyState");
 const toast = document.getElementById("toast");
 const networkCanvas = document.getElementById("networkCanvas");
 const subscriptionsButton = document.getElementById("subscriptionsButton");
+const subscriptionsBackButton = document.getElementById("subscriptionsBackButton");
 const subscriptionsView = document.getElementById("subscriptionsView");
 const topbarAuthCta = document.getElementById("topbarAuthCta");
+const planSelectButtons = document.querySelectorAll(".plan-select-btn");
 
 const supabaseUrl = document.querySelector('meta[name="supabase-url"]')?.content?.trim();
 const supabaseAnonKey = document.querySelector('meta[name="supabase-anon-key"]')?.content?.trim();
 const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+
+let activeUser = null;
+let selectedPlan = localStorage.getItem("kuoia:selectedPlan") || "Sin plan";
 
 const checkSupabaseConnection = async () => {
   if (!supabaseUrl || !supabaseAnonKey) {
@@ -211,10 +221,22 @@ const setActivePanel = (panel) => {
   authCard.classList.toggle("register-mode", !isLogin);
 };
 
+const fillProfileForm = (user) => {
+  if (!profileForm) return;
+  const metadata = user?.user_metadata || {};
+  const displayName = [metadata.firstName, metadata.lastName].filter(Boolean).join(" ").trim();
+
+  profileForm.elements.displayName.value = displayName || "";
+  profileForm.elements.role.value = metadata.identity || "particular";
+  profileForm.elements.city.value = metadata.location || "";
+  currentPlanInput.value = selectedPlan;
+};
+
 const showAuthView = () => {
   authView.classList.remove("hidden");
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.add("hidden");
+  profileView.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
 };
 
@@ -222,29 +244,82 @@ const showSubscriptionsView = () => {
   authView.classList.add("hidden");
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.remove("hidden");
+  profileView.classList.add("hidden");
   topbarAuthCta.classList.remove("hidden");
 };
 
 const showMarketplaceView = (user) => {
+  activeUser = user;
   authView.classList.add("hidden");
   marketplaceView.classList.remove("hidden");
   subscriptionsView.classList.add("hidden");
+  profileView.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
 
   const fullName = [user?.user_metadata?.firstName, user?.user_metadata?.lastName].filter(Boolean).join(" ").trim();
   const fallback = user?.email || "tu cuenta";
-  welcomeMessage.textContent = `Hola ${fullName || fallback}, aquí tienes un inicio dinámico de pantalla completa.`;
+  welcomeMessage.textContent = `Hola ${fullName || fallback}, aquí tienes los productos en venta.`;
 
   updatePriceLabel();
   renderProducts();
 };
 
+const showProfileView = () => {
+  authView.classList.add("hidden");
+  marketplaceView.classList.add("hidden");
+  subscriptionsView.classList.add("hidden");
+  profileView.classList.remove("hidden");
+  topbarAuthCta.classList.add("hidden");
+  fillProfileForm(activeUser);
+};
+
+const persistSelectedPlan = (planName) => {
+  selectedPlan = planName;
+  localStorage.setItem("kuoia:selectedPlan", planName);
+  if (currentPlanInput) currentPlanInput.value = planName;
+};
+
 loginTab.addEventListener("click", () => setActivePanel("login"));
 registerTab.addEventListener("click", () => setActivePanel("register"));
 subscriptionsButton?.addEventListener("click", showSubscriptionsView);
+subscriptionsBackButton?.addEventListener("click", showAuthView);
+profileButton?.addEventListener("click", showProfileView);
+profileBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
 topbarAuthCta?.addEventListener("click", () => {
   showAuthView();
   setActivePanel("login");
+});
+
+planSelectButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const plan = button.dataset.plan;
+    if (!plan) return;
+    persistSelectedPlan(plan);
+    showToast(`Plan ${plan} seleccionado correctamente.`);
+  });
+});
+
+profileForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const formData = new FormData(profileForm);
+  const displayName = String(formData.get("displayName") || "").trim();
+  const [firstName, ...rest] = displayName.split(" ");
+
+  if (activeUser) {
+    activeUser = {
+      ...activeUser,
+      user_metadata: {
+        ...activeUser.user_metadata,
+        firstName: firstName || "",
+        lastName: rest.join(" "),
+        identity: String(formData.get("role") || "particular"),
+        location: String(formData.get("city") || ""),
+      },
+    };
+  }
+
+  showToast("Perfil de Kuoia actualizado.");
+  showMarketplaceView(activeUser);
 });
 
 [searchInput, locationFilter, centerFilter, typeFilter].forEach((input) => {
@@ -334,8 +409,9 @@ registerPanel.addEventListener("submit", async (event) => {
   if (data.user) {
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError || !signInData.user) {
-      showToast("Cuenta creada. Si activaste confirmación por email, valida tu correo para entrar.");
-      setActivePanel("login");
+      showMarketplaceView(data.user);
+      showToast("Cuenta creada. Activa tu email después, pero ya puedes explorar el inicio.");
+      registerPanel.reset();
       return;
     }
 
