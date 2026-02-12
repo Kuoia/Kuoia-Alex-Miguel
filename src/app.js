@@ -13,6 +13,16 @@ const profileButton = document.getElementById("profileButton");
 const profileBackButton = document.getElementById("profileBackButton");
 const profileForm = document.getElementById("profileForm");
 const currentPlanInput = document.getElementById("currentPlanInput");
+const avatarUploadInput = document.getElementById("avatarUpload");
+const profileAvatarPreview = document.getElementById("profileAvatarPreview");
+const headerAvatar = document.getElementById("headerAvatar");
+const generateAvatarButton = document.getElementById("generateAvatarButton");
+const chatView = document.getElementById("chatView");
+const chatBackButton = document.getElementById("chatBackButton");
+const chatMessages = document.getElementById("chatMessages");
+const chatTitle = document.getElementById("chatTitle");
+const chatForm = document.getElementById("chatForm");
+const chatInput = document.getElementById("chatInput");
 const searchInput = document.getElementById("searchInput");
 const locationFilter = document.getElementById("locationFilter");
 const centerFilter = document.getElementById("centerFilter");
@@ -37,6 +47,20 @@ const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supa
 
 let activeUser = null;
 let selectedPlan = localStorage.getItem("kuoia:selectedPlan") || "Sin plan";
+let profileAvatarData = localStorage.getItem("kuoia:profileAvatar") || "";
+let activeChatProductId = null;
+
+const chatMessagesByProduct = {
+  p1: [
+    { sender: "buyer", name: "Lucía · Colegio Mirador", text: "Hola, ¿el kit incluye guía para docentes?", time: "09:10" },
+    { sender: "buyer", name: "Carlos · Familia", text: "¿Puedes enviar a Barcelona esta semana?", time: "09:18" },
+  ],
+  p2: [{ sender: "buyer", name: "Ainhoa · Docente", text: "Me interesa el banco de rúbricas para 1º ESO.", time: "10:02" }],
+  p3: [{ sender: "buyer", name: "Mario · Centro Sol", text: "¿Las tutorías se pueden contratar por grupo?", time: "11:30" }],
+  p4: [{ sender: "buyer", name: "Elena · AMPA", text: "¿Cuántos libros incluye el lote?", time: "12:05" }],
+  p5: [{ sender: "buyer", name: "Noa · Cole Privado", text: "¿Está alineado con LOMLOE?", time: "12:34" }],
+  p6: [{ sender: "buyer", name: "Javier · Infantil Luna", text: "¿Incluye piezas de reposición?", time: "13:15" }],
+};
 
 const checkSupabaseConnection = async () => {
   if (!supabaseUrl || !supabaseAnonKey) {
@@ -221,6 +245,73 @@ const setActivePanel = (panel) => {
   authCard.classList.toggle("register-mode", !isLogin);
 };
 
+const createDefaultAvatar = (name = "") => {
+  const clean = String(name || "Kuoia").trim();
+  const initials = clean
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((value) => value[0]?.toUpperCase() || "")
+    .join("") || "K";
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#5c8ee0"/>
+          <stop offset="100%" stop-color="#5cb4b5"/>
+        </linearGradient>
+      </defs>
+      <rect width="160" height="160" rx="80" fill="url(#g)"/>
+      <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle"
+        font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="58" font-weight="700" fill="#ffffff">${initials}</text>
+    </svg>
+  `;
+
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+};
+
+const updateAvatarUI = () => {
+  const displayName = profileForm?.elements?.displayName?.value || activeUser?.email || "Kuoia";
+  const avatar = profileAvatarData || createDefaultAvatar(displayName);
+
+  if (profileAvatarPreview) profileAvatarPreview.src = avatar;
+  if (headerAvatar) headerAvatar.src = avatar;
+};
+
+const renderChatMessages = () => {
+  if (!chatMessages || !activeChatProductId) return;
+
+  const messages = chatMessagesByProduct[activeChatProductId] || [];
+  chatMessages.innerHTML = messages
+    .map(
+      (message) => `
+      <article class="chat-bubble ${message.sender}">
+        <small>${message.sender === "buyer" ? message.name : "Tú"} · ${message.time}</small>
+        <p>${message.text}</p>
+      </article>
+    `,
+    )
+    .join("");
+
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+};
+
+const openChat = (productId) => {
+  const product = productCatalog.find((item) => item.id === productId);
+  if (!product) return;
+
+  activeChatProductId = product.id;
+  if (chatTitle) chatTitle.textContent = `Chat de compradores · ${product.title}`;
+  authView.classList.add("hidden");
+  marketplaceView.classList.add("hidden");
+  subscriptionsView.classList.add("hidden");
+  profileView.classList.add("hidden");
+  chatView?.classList.remove("hidden");
+  topbarAuthCta.classList.add("hidden");
+  renderChatMessages();
+};
+
 const fillProfileForm = (user) => {
   if (!profileForm) return;
   const metadata = user?.user_metadata || {};
@@ -230,6 +321,7 @@ const fillProfileForm = (user) => {
   profileForm.elements.role.value = metadata.identity || "particular";
   profileForm.elements.city.value = metadata.location || "";
   currentPlanInput.value = selectedPlan;
+  updateAvatarUI();
 };
 
 const showAuthView = () => {
@@ -237,6 +329,7 @@ const showAuthView = () => {
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.add("hidden");
   profileView.classList.add("hidden");
+  chatView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
 };
 
@@ -245,6 +338,7 @@ const showSubscriptionsView = () => {
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.remove("hidden");
   profileView.classList.add("hidden");
+  chatView?.classList.add("hidden");
   topbarAuthCta.classList.remove("hidden");
 };
 
@@ -254,7 +348,9 @@ const showMarketplaceView = (user) => {
   marketplaceView.classList.remove("hidden");
   subscriptionsView.classList.add("hidden");
   profileView.classList.add("hidden");
+  chatView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
+  updateAvatarUI();
 
   const fullName = [user?.user_metadata?.firstName, user?.user_metadata?.lastName].filter(Boolean).join(" ").trim();
   const fallback = user?.email || "tu cuenta";
@@ -269,6 +365,7 @@ const showProfileView = () => {
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.add("hidden");
   profileView.classList.remove("hidden");
+  chatView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
   fillProfileForm(activeUser);
 };
@@ -285,6 +382,27 @@ subscriptionsButton?.addEventListener("click", showSubscriptionsView);
 subscriptionsBackButton?.addEventListener("click", showAuthView);
 profileButton?.addEventListener("click", showProfileView);
 profileBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
+chatBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
+generateAvatarButton?.addEventListener("click", () => {
+  const currentName = profileForm?.elements?.displayName?.value || activeUser?.email || "Kuoia";
+  profileAvatarData = createDefaultAvatar(currentName);
+  localStorage.setItem("kuoia:profileAvatar", profileAvatarData);
+  updateAvatarUI();
+  showToast("Avatar genérico creado.");
+});
+avatarUploadInput?.addEventListener("change", () => {
+  const [file] = avatarUploadInput.files || [];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    profileAvatarData = String(reader.result || "");
+    localStorage.setItem("kuoia:profileAvatar", profileAvatarData);
+    updateAvatarUI();
+    showToast("Imagen de perfil actualizada.");
+  };
+  reader.readAsDataURL(file);
+});
 topbarAuthCta?.addEventListener("click", () => {
   showAuthView();
   setActivePanel("login");
@@ -318,6 +436,11 @@ profileForm?.addEventListener("submit", (event) => {
     };
   }
 
+  if (!profileAvatarData) {
+    profileAvatarData = createDefaultAvatar(displayName || activeUser?.email || "Kuoia");
+    localStorage.setItem("kuoia:profileAvatar", profileAvatarData);
+  }
+
   showToast("Perfil de Kuoia actualizado.");
   showMarketplaceView(activeUser);
 });
@@ -341,13 +464,36 @@ marketplaceGrid.addEventListener("click", (event) => {
   const product = productCatalog.find((item) => item.id === id);
   if (!product || !action) return;
 
+  if (action === "chat") {
+    openChat(product.id);
+    return;
+  }
+
   const actionMessages = {
-    chat: `Abriendo chat para ${product.title}.`,
     buy: `Preparando compra de ${product.title}.`,
     save: `${product.title} se guardó en favoritos.`,
   };
 
   showToast(actionMessages[action] || "Acción ejecutada");
+});
+
+chatForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!activeChatProductId || !chatInput) return;
+
+  const message = chatInput.value.trim();
+  if (!message) return;
+
+  if (!chatMessagesByProduct[activeChatProductId]) chatMessagesByProduct[activeChatProductId] = [];
+  chatMessagesByProduct[activeChatProductId].push({
+    sender: "self",
+    name: "Tú",
+    text: message,
+    time: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
+  });
+
+  renderChatMessages();
+  chatForm.reset();
 });
 
 loginPanel.addEventListener("submit", async (event) => {
@@ -427,6 +573,8 @@ logoutButton.addEventListener("click", async () => {
   showToast("Sesión cerrada.");
   setActivePanel("login");
 });
+
+updateAvatarUI();
 
 const connectionStatus = await checkSupabaseConnection();
 if (!connectionStatus.ok) showToast(connectionStatus.message);

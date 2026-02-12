@@ -184,6 +184,7 @@
             <p class="subtitle" id="welcomeMessage">Explora lo que la comunidad comparte hoy.</p>
           </div>
           <div class="header-actions">
+            <img id="headerAvatar" class="header-avatar" alt="Avatar de perfil" />
             <button class="btn btn-secondary" id="profileButton" type="button">Perfil</button>
             <button class="btn btn-secondary" id="logoutButton" type="button">Cerrar sesión</button>
           </div>
@@ -245,6 +246,30 @@
         </div>
       </section>
 
+
+      <section class="chat-view hidden" id="chatView" aria-label="Chat con compradores">
+        <div class="chat-card">
+          <header class="chat-header">
+            <div>
+              <p class="eyebrow">Mensajes</p>
+              <h2 id="chatTitle">Chat de compradores</h2>
+              <p class="subtitle">Revisa y responde mensajes de compradores interesados.</p>
+            </div>
+            <button class="btn btn-secondary" id="chatBackButton" type="button">Volver al inicio</button>
+          </header>
+
+          <div class="chat-messages" id="chatMessages"></div>
+
+          <form id="chatForm" class="chat-form">
+            <label for="chatInput">Responder</label>
+            <div class="chat-input-row">
+              <input id="chatInput" name="message" type="text" placeholder="Escribe una respuesta..." required />
+              <button class="btn btn-primary" type="submit">Enviar</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
       <section class="profile-view hidden" id="profileView" aria-label="Perfil de la cuenta dentro de Kuoia">
         <div class="profile-card">
           <div>
@@ -273,6 +298,17 @@
               Plan actual
               <input type="text" name="currentPlan" id="currentPlanInput" readonly />
             </label>
+            <div class="avatar-editor">
+              <p class="avatar-editor-title">Imagen de perfil</p>
+              <div class="avatar-editor-content">
+                <img id="profileAvatarPreview" class="profile-avatar-preview" alt="Vista previa del avatar" />
+                <div class="avatar-editor-controls">
+                  <label for="avatarUpload" class="btn btn-secondary avatar-upload-label">Subir foto o logo</label>
+                  <input id="avatarUpload" name="avatarUpload" type="file" accept="image/*" />
+                  <button class="btn btn-secondary" id="generateAvatarButton" type="button">Crear avatar genérico</button>
+                </div>
+              </div>
+            </div>
             <div class="profile-actions">
               <button class="btn btn-primary" type="submit">Guardar perfil</button>
               <button class="btn btn-secondary" id="profileBackButton" type="button">Volver al inicio</button>
