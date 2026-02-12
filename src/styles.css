@@ -691,11 +691,40 @@ select:focus {
 
 .header-actions {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 0.6rem;
+  align-items: center;
 }
 
 .header-actions .btn {
   max-width: 160px;
+}
+
+.status-chip {
+  border: 1px solid #bdd0f4;
+  background: #eef5ff;
+  color: var(--primary-deep);
+  border-radius: 999px;
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+.status-chip strong {
+  min-width: 1.2rem;
+  text-align: center;
+}
+
+.status-chip.has-unread {
+  border-color: #6e96dd;
+  background: #deebff;
+  box-shadow: 0 0 0 3px rgba(102, 150, 227, 0.2);
 }
 
 .profile-view {
@@ -756,8 +785,8 @@ select:focus {
 }
 
 .header-avatar {
-  width: 44px;
-  height: 44px;
+  width: 64px;
+  height: 64px;
   border-radius: 999px;
   object-fit: cover;
   border: 2px solid #c2d6fb;
@@ -914,7 +943,7 @@ select:focus {
   }
 
   .header-avatar {
-    width: 40px;
-    height: 40px;
+    width: 52px;
+    height: 52px;
   }
 }

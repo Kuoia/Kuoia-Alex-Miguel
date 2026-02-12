@@ -16,6 +16,10 @@ const currentPlanInput = document.getElementById("currentPlanInput");
 const avatarUploadInput = document.getElementById("avatarUpload");
 const profileAvatarPreview = document.getElementById("profileAvatarPreview");
 const headerAvatar = document.getElementById("headerAvatar");
+const notificationsIndicator = document.getElementById("notificationsIndicator");
+const chatIndicator = document.getElementById("chatIndicator");
+const notificationsCount = document.getElementById("notificationsCount");
+const chatCount = document.getElementById("chatCount");
 const generateAvatarButton = document.getElementById("generateAvatarButton");
 const chatView = document.getElementById("chatView");
 const chatBackButton = document.getElementById("chatBackButton");
@@ -49,6 +53,8 @@ let activeUser = null;
 let selectedPlan = localStorage.getItem("kuoia:selectedPlan") || "Sin plan";
 let profileAvatarData = localStorage.getItem("kuoia:profileAvatar") || "";
 let activeChatProductId = null;
+let unreadNotifications = 2;
+let unreadChats = 0;
 
 const chatMessagesByProduct = {
   p1: [
@@ -278,6 +284,25 @@ const updateAvatarUI = () => {
   if (profileAvatarPreview) profileAvatarPreview.src = avatar;
   if (headerAvatar) headerAvatar.src = avatar;
 };
+const updateIndicatorsUI = () => {
+  if (notificationsCount) notificationsCount.textContent = String(unreadNotifications);
+  if (chatCount) chatCount.textContent = String(unreadChats);
+
+  notificationsIndicator?.classList.toggle("has-unread", unreadNotifications > 0);
+  chatIndicator?.classList.toggle("has-unread", unreadChats > 0);
+};
+
+const clearChatUnread = () => {
+  if (unreadChats === 0) return;
+  unreadChats = 0;
+  updateIndicatorsUI();
+};
+
+const registerIncomingChat = () => {
+  unreadChats += 1;
+  updateIndicatorsUI();
+};
+
 
 const renderChatMessages = () => {
   if (!chatMessages || !activeChatProductId) return;
@@ -309,6 +334,7 @@ const openChat = (productId) => {
   profileView.classList.add("hidden");
   chatView?.classList.remove("hidden");
   topbarAuthCta.classList.add("hidden");
+  clearChatUnread();
   renderChatMessages();
 };
 
@@ -351,6 +377,7 @@ const showMarketplaceView = (user) => {
   chatView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
   updateAvatarUI();
+  updateIndicatorsUI();
 
   const fullName = [user?.user_metadata?.firstName, user?.user_metadata?.lastName].filter(Boolean).join(" ").trim();
   const fallback = user?.email || "tu cuenta";
@@ -407,6 +434,26 @@ topbarAuthCta?.addEventListener("click", () => {
   showAuthView();
   setActivePanel("login");
 });
+notificationsIndicator?.addEventListener("click", () => {
+  unreadNotifications = 0;
+  updateIndicatorsUI();
+  showToast("Notificaciones revisadas.");
+});
+
+chatIndicator?.addEventListener("click", () => {
+  if (unreadChats === 0) {
+    showToast("No tienes chats pendientes.");
+    return;
+  }
+
+  if (!activeChatProductId) {
+    const [firstProductId] = Object.keys(chatMessagesByProduct);
+    if (firstProductId) openChat(firstProductId);
+  } else {
+    openChat(activeChatProductId);
+  }
+});
+
 
 planSelectButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -494,6 +541,25 @@ chatForm?.addEventListener("submit", (event) => {
 
   renderChatMessages();
   chatForm.reset();
+
+  window.setTimeout(() => {
+    if (!activeChatProductId) return;
+
+    chatMessagesByProduct[activeChatProductId].push({
+      sender: "buyer",
+      name: "Comprador interesado",
+      text: "¡Gracias! Te confirmo en breve.",
+      time: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
+    });
+
+    if (!chatView || chatView.classList.contains("hidden")) {
+      registerIncomingChat();
+      showToast("Tienes un nuevo mensaje de chat.");
+      return;
+    }
+
+    renderChatMessages();
+  }, 2200);
 });
 
 loginPanel.addEventListener("submit", async (event) => {
@@ -575,6 +641,7 @@ logoutButton.addEventListener("click", async () => {
 });
 
 updateAvatarUI();
+updateIndicatorsUI();
 
 const connectionStatus = await checkSupabaseConnection();
 if (!connectionStatus.ok) showToast(connectionStatus.message);
