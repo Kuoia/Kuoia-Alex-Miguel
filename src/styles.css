@@ -761,6 +761,74 @@ select:focus {
   background: #e7f1ff;
 }
 
+.chat-registry-view {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  padding: 5rem 0.8rem 0.8rem;
+}
+
+.chat-registry-card {
+  width: min(1000px, 100%);
+  margin: 0 auto;
+  border: 1px solid var(--surface-border);
+  background: rgba(247, 251, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.chat-registry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.chat-registry-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.chat-registry-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 12px;
+  border: 1px solid #d3e3ff;
+  background: #fff;
+  padding: 0.75rem;
+}
+
+.chat-registry-item.active {
+  border-color: #9ec0fa;
+  background: rgba(227, 239, 255, 0.5);
+}
+
+.chat-registry-product,
+.chat-registry-meta,
+.chat-registry-snippet {
+  margin: 0;
+}
+
+.chat-registry-product {
+  font-weight: 700;
+}
+
+.chat-registry-meta,
+.chat-registry-snippet {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.chat-registry-open-btn {
+  margin: 0;
+  width: auto;
+}
+
 .chat-view {
   position: relative;
   z-index: 2;
@@ -936,6 +1004,16 @@ select:focus {
 }
 
 @media (max-width: 720px) {
+  .chat-registry-header,
+  .chat-registry-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chat-registry-open-btn {
+    width: 100%;
+  }
+
   .chat-card {
     min-height: calc(100vh - 5.5rem);
     padding: 1rem;
