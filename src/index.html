@@ -75,25 +75,17 @@
 
               <form class="auth-form" id="registerPanel" role="tabpanel" aria-labelledby="registerTab" hidden>
                 <label>
-                  Nombre
-                  <input type="text" name="firstName" placeholder="Tu nombre" required />
+                  Nombre de usuario
+                  <input type="text" name="displayName" placeholder="Tu nombre o el de tu centro" required />
                 </label>
                 <label>
-                  Apellidos
-                  <input type="text" name="lastName" placeholder="Tus apellidos" required />
-                </label>
-                <label>
-                  Identidad
+                  Perfil
                   <select name="identity" required>
                     <option value="" selected disabled>Selecciona una opción</option>
                     <option value="centro-educativo">Centro educativo</option>
+                    <option value="academica">Académica</option>
                     <option value="particular">Particular</option>
-                    <option value="docente">Docente</option>
                   </select>
-                </label>
-                <label>
-                  Localidad
-                  <input type="text" name="location" placeholder="Tu localidad" required />
                 </label>
                 <label>
                   Correo electrónico
@@ -102,10 +94,6 @@
                 <label>
                   Contraseña
                   <input type="password" name="password" placeholder="Mínimo 8 caracteres" minlength="8" required />
-                </label>
-                <label class="register-checkbox">
-                  <input type="checkbox" name="terms" required />
-                  <span>Acepto términos y políticas de uso de Kuoia.</span>
                 </label>
                 <button class="btn btn-primary" type="submit">Crear cuenta</button>
               </form>
@@ -293,7 +281,7 @@
               <select name="role" required>
                 <option value="centro-educativo">Centro educativo</option>
                 <option value="particular">Particular</option>
-                <option value="docente">Docente</option>
+                <option value="academica">Académica</option>
               </select>
             </label>
             <label>

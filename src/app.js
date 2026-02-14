@@ -341,7 +341,7 @@ const openChat = (productId) => {
 const fillProfileForm = (user) => {
   if (!profileForm) return;
   const metadata = user?.user_metadata || {};
-  const displayName = [metadata.firstName, metadata.lastName].filter(Boolean).join(" ").trim();
+  const displayName = String(metadata.displayName || [metadata.firstName, metadata.lastName].filter(Boolean).join(" ").trim());
 
   profileForm.elements.displayName.value = displayName || "";
   profileForm.elements.role.value = metadata.identity || "particular";
@@ -379,9 +379,10 @@ const showMarketplaceView = (user) => {
   updateAvatarUI();
   updateIndicatorsUI();
 
-  const fullName = [user?.user_metadata?.firstName, user?.user_metadata?.lastName].filter(Boolean).join(" ").trim();
+  const metadataName = [user?.user_metadata?.firstName, user?.user_metadata?.lastName].filter(Boolean).join(" ").trim();
+  const displayName = String(user?.user_metadata?.displayName || "").trim();
   const fallback = user?.email || "tu cuenta";
-  welcomeMessage.textContent = `Hola ${fullName || fallback}, aquí tienes los productos en venta.`;
+  welcomeMessage.textContent = `Hola ${displayName || metadataName || fallback}, aquí tienes los productos en venta.`;
 
   updatePriceLabel();
   renderProducts();
@@ -475,6 +476,7 @@ profileForm?.addEventListener("submit", (event) => {
       ...activeUser,
       user_metadata: {
         ...activeUser.user_metadata,
+        displayName,
         firstName: firstName || "",
         lastName: rest.join(" "),
         identity: String(formData.get("role") || "particular"),
@@ -598,11 +600,15 @@ registerPanel.addEventListener("submit", async (event) => {
   const email = String(formData.get("email") || "").trim();
   const password = String(formData.get("password") || "");
 
+  const displayName = String(formData.get("displayName") || "").trim();
+  const [firstName, ...rest] = displayName.split(" ").filter(Boolean);
+
   const profile = {
-    firstName: String(formData.get("firstName") || "").trim(),
-    lastName: String(formData.get("lastName") || "").trim(),
+    displayName,
+    firstName: firstName || "",
+    lastName: rest.join(" "),
     identity: String(formData.get("identity") || "").trim(),
-    location: String(formData.get("location") || "").trim(),
+    location: "",
   };
 
   const { data, error } = await supabase.auth.signUp({
