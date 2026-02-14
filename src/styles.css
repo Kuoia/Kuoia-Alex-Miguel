@@ -123,8 +123,8 @@ body {
 }
 
 .auth-card {
-  width: min(760px, 94vw);
-  min-height: 360px;
+  width: min(520px, 94vw);
+  min-height: 350px;
   border: 1px solid var(--surface-border);
   background: rgba(247, 250, 255, 0.95);
   backdrop-filter: blur(6px);
@@ -141,7 +141,7 @@ body {
 
 .auth-card.register-mode {
   width: min(760px, 94vw);
-  min-height: 390px;
+  min-height: 430px;
   justify-content: center;
 }
 
@@ -199,9 +199,13 @@ body {
   margin-top: 0.7rem;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  max-width: 560px;
+  max-width: 460px;
   width: 100%;
   margin-inline: auto;
+}
+
+.auth-card.register-mode .auth-panels {
+  max-width: 620px;
 }
 
 .auth-form {
@@ -591,6 +595,10 @@ select:focus {
     min-height: min(560px, 90vh);
     border-radius: 14px;
     padding: 0.9rem;
+  }
+
+  .auth-card.register-mode .auth-panels {
+    max-width: 100%;
   }
 
 
