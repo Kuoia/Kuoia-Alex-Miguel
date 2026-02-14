@@ -163,11 +163,8 @@
             <p class="subtitle" id="welcomeMessage">Explora lo que la comunidad comparte hoy.</p>
           </div>
           <div class="header-actions">
-            <button class="status-chip" id="notificationsIndicator" type="button" aria-live="polite">
-              🔔 Notificaciones <strong id="notificationsCount">0</strong>
-            </button>
-            <button class="status-chip" id="chatIndicator" type="button" aria-live="polite">
-              💬 Chats <strong id="chatCount">0</strong>
+            <button class="status-chip" id="chatRegistryButton" type="button" aria-live="polite">
+              📒 Registro de chats
             </button>
             <img id="headerAvatar" class="header-avatar" alt="Avatar de perfil" />
             <button class="btn btn-secondary" id="marketplaceSubscriptionsButton" type="button">Suscripciones</button>
@@ -229,6 +226,21 @@
             <div class="marketplace-grid" id="marketplaceGrid"></div>
             <p class="empty-state hidden" id="emptyState">No se encontraron productos con esos filtros.</p>
           </section>
+        </div>
+      </section>
+
+      <section class="chat-registry-view hidden" id="chatRegistryView" aria-label="Registro de chats activos e inactivos">
+        <div class="chat-registry-card">
+          <header class="chat-registry-header">
+            <div>
+              <p class="eyebrow">Historial</p>
+              <h2>Registro de chats</h2>
+              <p class="subtitle">Consulta y abre chats activos o inactivos desde un único panel.</p>
+            </div>
+            <button class="btn btn-secondary" id="chatRegistryBackButton" type="button">Volver al inicio</button>
+          </header>
+
+          <div class="chat-registry-list" id="chatRegistryList"></div>
         </div>
       </section>
 

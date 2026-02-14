@@ -16,10 +16,10 @@ const currentPlanInput = document.getElementById("currentPlanInput");
 const avatarUploadInput = document.getElementById("avatarUpload");
 const profileAvatarPreview = document.getElementById("profileAvatarPreview");
 const headerAvatar = document.getElementById("headerAvatar");
-const notificationsIndicator = document.getElementById("notificationsIndicator");
-const chatIndicator = document.getElementById("chatIndicator");
-const notificationsCount = document.getElementById("notificationsCount");
-const chatCount = document.getElementById("chatCount");
+const chatRegistryButton = document.getElementById("chatRegistryButton");
+const chatRegistryView = document.getElementById("chatRegistryView");
+const chatRegistryBackButton = document.getElementById("chatRegistryBackButton");
+const chatRegistryList = document.getElementById("chatRegistryList");
 const generateAvatarButton = document.getElementById("generateAvatarButton");
 const chatView = document.getElementById("chatView");
 const chatBackButton = document.getElementById("chatBackButton");
@@ -57,8 +57,7 @@ let activeUser = null;
 let selectedPlan = localStorage.getItem("kuoia:selectedPlan") || "Sin plan";
 let profileAvatarData = localStorage.getItem("kuoia:profileAvatar") || "";
 let activeChatProductId = null;
-let unreadNotifications = 2;
-let unreadChats = 0;
+const activeChatIds = new Set(["p1", "p2", "p3"]);
 
 const chatMessagesByProduct = {
   p1: [
@@ -289,22 +288,55 @@ const updateAvatarUI = () => {
   if (headerAvatar) headerAvatar.src = avatar;
 };
 const updateIndicatorsUI = () => {
-  if (notificationsCount) notificationsCount.textContent = String(unreadNotifications);
-  if (chatCount) chatCount.textContent = String(unreadChats);
+  if (!chatRegistryButton) return;
 
-  notificationsIndicator?.classList.toggle("has-unread", unreadNotifications > 0);
-  chatIndicator?.classList.toggle("has-unread", unreadChats > 0);
+  const activeCount = Array.from(activeChatIds).filter((id) => (chatMessagesByProduct[id] || []).length > 0).length;
+  chatRegistryButton.classList.toggle("has-unread", activeCount > 0);
+  chatRegistryButton.textContent = `📒 Registro de chats (${activeCount} activos)`;
 };
 
 const clearChatUnread = () => {
-  if (unreadChats === 0) return;
-  unreadChats = 0;
   updateIndicatorsUI();
 };
 
 const registerIncomingChat = () => {
-  unreadChats += 1;
+  if (activeChatProductId) activeChatIds.add(activeChatProductId);
   updateIndicatorsUI();
+};
+
+const renderChatRegistry = () => {
+  if (!chatRegistryList) return;
+
+  const chatRows = productCatalog
+    .filter((product) => (chatMessagesByProduct[product.id] || []).length > 0)
+    .map((product) => {
+      const messages = chatMessagesByProduct[product.id] || [];
+      const lastMessage = messages[messages.length - 1];
+      const isActive = activeChatIds.has(product.id);
+      return `
+        <article class="chat-registry-item ${isActive ? "active" : "inactive"}">
+          <div>
+            <p class="chat-registry-product">${product.title}</p>
+            <p class="chat-registry-meta">${isActive ? "Activo" : "Inactivo"} · Último mensaje: ${lastMessage?.time || "--:--"}</p>
+            <p class="chat-registry-snippet">${lastMessage?.text || "Sin mensajes."}</p>
+          </div>
+          <button type="button" class="btn btn-secondary chat-registry-open-btn" data-id="${product.id}">Abrir chat</button>
+        </article>
+      `;
+    });
+
+  chatRegistryList.innerHTML = chatRows.length ? chatRows.join("") : '<p class="empty-state">Aún no hay chats registrados.</p>';
+};
+
+const showChatRegistryView = () => {
+  authView.classList.add("hidden");
+  marketplaceView.classList.add("hidden");
+  subscriptionsView.classList.add("hidden");
+  profileView.classList.add("hidden");
+  chatView?.classList.add("hidden");
+  chatRegistryView?.classList.remove("hidden");
+  topbarAuthCta.classList.add("hidden");
+  renderChatRegistry();
 };
 
 
@@ -331,6 +363,7 @@ const openChat = (productId) => {
   if (!product) return;
 
   activeChatProductId = product.id;
+  activeChatIds.add(product.id);
   const currentMessages = chatMessagesByProduct[product.id] || [];
   const firstBuyerName = currentMessages.find((message) => message.sender === "buyer")?.name || "Comprador interesado";
 
@@ -343,6 +376,7 @@ const openChat = (productId) => {
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.add("hidden");
   profileView.classList.add("hidden");
+  chatRegistryView?.classList.add("hidden");
   chatView?.classList.remove("hidden");
   topbarAuthCta.classList.add("hidden");
   clearChatUnread();
@@ -366,6 +400,7 @@ const showAuthView = () => {
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.add("hidden");
   profileView.classList.add("hidden");
+  chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
 };
@@ -375,8 +410,16 @@ const showSubscriptionsView = () => {
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.remove("hidden");
   profileView.classList.add("hidden");
+  chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
-  topbarAuthCta.classList.remove("hidden");
+
+  if (activeUser) {
+    topbarAuthCta.textContent = "Volver a ventas";
+    topbarAuthCta.classList.remove("hidden");
+    return;
+  }
+
+  topbarAuthCta.classList.add("hidden");
 };
 
 const showMarketplaceView = (user) => {
@@ -385,6 +428,7 @@ const showMarketplaceView = (user) => {
   marketplaceView.classList.remove("hidden");
   subscriptionsView.classList.add("hidden");
   profileView.classList.add("hidden");
+  chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
   updateAvatarUI();
@@ -404,6 +448,7 @@ const showProfileView = () => {
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.add("hidden");
   profileView.classList.remove("hidden");
+  chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
   fillProfileForm(activeUser);
@@ -429,6 +474,8 @@ subscriptionsBackButton?.addEventListener("click", () => {
 profileButton?.addEventListener("click", showProfileView);
 profileBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
 chatBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
+chatRegistryButton?.addEventListener("click", showChatRegistryView);
+chatRegistryBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
 generateAvatarButton?.addEventListener("click", () => {
   const currentName = profileForm?.elements?.displayName?.value || activeUser?.email || "Kuoia";
   profileAvatarData = createDefaultAvatar(currentName);
@@ -450,27 +497,13 @@ avatarUploadInput?.addEventListener("change", () => {
   reader.readAsDataURL(file);
 });
 topbarAuthCta?.addEventListener("click", () => {
-  showAuthView();
-  setActivePanel("login");
-});
-notificationsIndicator?.addEventListener("click", () => {
-  unreadNotifications = 0;
-  updateIndicatorsUI();
-  showToast("Notificaciones revisadas.");
-});
-
-chatIndicator?.addEventListener("click", () => {
-  if (unreadChats === 0) {
-    showToast("No tienes chats pendientes.");
+  if (activeUser) {
+    showMarketplaceView(activeUser);
     return;
   }
 
-  if (!activeChatProductId) {
-    const [firstProductId] = Object.keys(chatMessagesByProduct);
-    if (firstProductId) openChat(firstProductId);
-  } else {
-    openChat(activeChatProductId);
-  }
+  showAuthView();
+  setActivePanel("login");
 });
 
 
@@ -542,6 +575,15 @@ marketplaceGrid.addEventListener("click", (event) => {
   };
 
   showToast(actionMessages[action] || "Acción ejecutada");
+});
+
+chatRegistryList?.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLButtonElement)) return;
+
+  const productId = target.dataset.id;
+  if (!productId) return;
+  openChat(productId);
 });
 
 chatForm?.addEventListener("submit", (event) => {
