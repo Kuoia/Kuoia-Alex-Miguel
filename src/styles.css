@@ -765,20 +765,21 @@ select:focus {
   position: relative;
   z-index: 2;
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 5.4rem 1rem 1rem;
+  padding: 5rem 0.8rem 0.8rem;
 }
 
 .chat-card {
-  width: min(880px, 95vw);
+  width: min(1200px, 100%);
+  min-height: calc(100vh - 5.8rem);
+  margin: 0 auto;
   border: 1px solid var(--surface-border);
-  background: rgba(247, 251, 255, 0.95);
-  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(250, 253, 255, 0.97), rgba(238, 247, 255, 0.96));
+  border-radius: 18px;
   box-shadow: var(--shadow);
-  padding: 1.1rem;
+  padding: 1.15rem;
   display: grid;
-  gap: 1rem;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 0.9rem;
 }
 
 .chat-header {
@@ -788,8 +789,44 @@ select:focus {
   align-items: center;
 }
 
+.chat-highlight {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid #cfe1ff;
+  background: linear-gradient(125deg, rgba(88, 134, 212, 0.13), rgba(92, 180, 181, 0.12));
+}
+
+.chat-contact-name {
+  margin: 0;
+  font-size: clamp(1rem, 1.1vw + 0.8rem, 1.2rem);
+  font-weight: 700;
+  color: var(--primary-deep);
+}
+
+.chat-product-meta {
+  margin: 0.32rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.chat-product-price {
+  margin: 0;
+  font-size: clamp(1rem, 1vw + 0.72rem, 1.25rem);
+  font-weight: 800;
+  color: #2f6fb6;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(61, 117, 186, 0.24);
+  background: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+}
+
 .chat-messages {
-  max-height: 56vh;
+  min-height: 0;
   overflow-y: auto;
   display: grid;
   gap: 0.65rem;
@@ -797,10 +834,13 @@ select:focus {
 }
 
 .chat-bubble {
-  max-width: 75%;
+  width: fit-content;
+  max-width: min(75%, 560px);
   border-radius: 12px;
   padding: 0.58rem 0.72rem;
   font-size: 0.88rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .chat-bubble p {
@@ -896,9 +936,23 @@ select:focus {
 }
 
 @media (max-width: 720px) {
+  .chat-card {
+    min-height: calc(100vh - 5.5rem);
+    padding: 1rem;
+  }
+
   .chat-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .chat-highlight {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chat-product-price {
+    align-self: flex-start;
   }
 
   .chat-input-row {

@@ -25,6 +25,9 @@ const chatView = document.getElementById("chatView");
 const chatBackButton = document.getElementById("chatBackButton");
 const chatMessages = document.getElementById("chatMessages");
 const chatTitle = document.getElementById("chatTitle");
+const chatContactName = document.getElementById("chatContactName");
+const chatProductName = document.getElementById("chatProductName");
+const chatProductPrice = document.getElementById("chatProductPrice");
 const chatForm = document.getElementById("chatForm");
 const chatInput = document.getElementById("chatInput");
 const searchInput = document.getElementById("searchInput");
@@ -328,7 +331,14 @@ const openChat = (productId) => {
   if (!product) return;
 
   activeChatProductId = product.id;
-  if (chatTitle) chatTitle.textContent = `Chat de compradores · ${product.title}`;
+  const currentMessages = chatMessagesByProduct[product.id] || [];
+  const firstBuyerName = currentMessages.find((message) => message.sender === "buyer")?.name || "Comprador interesado";
+
+  if (chatTitle) chatTitle.textContent = "Chat de compradores";
+  if (chatContactName) chatContactName.textContent = firstBuyerName;
+  if (chatProductName) chatProductName.textContent = product.title;
+  if (chatProductPrice) chatProductPrice.textContent = `${product.price} €`;
+
   authView.classList.add("hidden");
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.add("hidden");
