@@ -45,18 +45,12 @@
               <p class="subtitle">Todo en un solo lugar para colegios, familias y recursos educativos.</p>
             </div>
 
-            <div class="register-highlights" aria-hidden="true">
-              <span>✨ Registro rápido</span>
-              <span>🛍️ Inicio con productos</span>
-              <span>🧾 Suscripciones flexibles</span>
-            </div>
-
             <div class="auth-toggle" role="tablist" aria-label="Seleccionar panel de acceso">
               <button class="toggle-btn active" id="loginTab" role="tab" aria-selected="true" aria-controls="loginPanel" type="button">
                 Iniciar sesión
               </button>
               <button class="toggle-btn" id="registerTab" role="tab" aria-selected="false" aria-controls="registerPanel" type="button">
-                Crear usuario
+                Crear cuenta
               </button>
             </div>
 
@@ -100,9 +94,6 @@
             </div>
           </section>
 
-          <button class="floating-subscriptions-btn" id="subscriptionsButton" type="button">
-            Suscripciones
-          </button>
         </div>
       </section>
 
@@ -179,6 +170,7 @@
               💬 Chats <strong id="chatCount">0</strong>
             </button>
             <img id="headerAvatar" class="header-avatar" alt="Avatar de perfil" />
+            <button class="btn btn-secondary" id="marketplaceSubscriptionsButton" type="button">Suscripciones</button>
             <button class="btn btn-secondary" id="profileButton" type="button">Perfil</button>
             <button class="btn btn-secondary" id="logoutButton" type="button">Cerrar sesión</button>
           </div>
@@ -304,6 +296,7 @@
               </div>
             </div>
             <div class="profile-actions">
+              <button class="btn btn-secondary" id="profileSubscriptionsButton" type="button">Suscripciones</button>
               <button class="btn btn-primary" type="submit">Guardar perfil</button>
               <button class="btn btn-secondary" id="profileBackButton" type="button">Volver al inicio</button>
             </div>
