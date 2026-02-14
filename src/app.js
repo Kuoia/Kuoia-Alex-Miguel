@@ -246,7 +246,9 @@ const setActivePanel = (panel) => {
   registerTab.classList.toggle("active", !isLogin);
   registerTab.setAttribute("aria-selected", String(!isLogin));
   loginPanel.classList.toggle("active", isLogin);
+  loginPanel.hidden = !isLogin;
   registerPanel.classList.toggle("active", !isLogin);
+  registerPanel.hidden = isLogin;
   authCard.classList.toggle("register-mode", !isLogin);
 };
 
