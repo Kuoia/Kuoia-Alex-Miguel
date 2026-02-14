@@ -32,46 +32,40 @@ export const handleSubmit = async (event) => {
       throw new Error("Completa título, descripción y precio válidos.");
     }
 
-    if (!(imageFile instanceof File) || imageFile.size === 0) {
-      throw new Error("Selecciona una imagen válida.");
-    }
-
-    // 3) Subida de imagen al bucket "product-images" en ruta `${user.id}/...`
-    const fileExt = imageFile.name.split(".").pop() || "jpg";
-    const fileName = `${crypto.randomUUID()}.${fileExt}`;
-    const filePath = `${user.id}/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("product-images")
-      .upload(filePath, imageFile, {
-        cacheControl: "3600",
-        upsert: false,
-      });
-
-    if (uploadError) throw uploadError;
-
-    // 4) Obtener URL pública o signedUrl
+    // 3 y 4) Si hay imagen, subir al bucket "product-images"
+    // usando la ruta `${user.id}/${crypto.randomUUID()}-${file.name}`.
     let imageUrl = null;
 
-    // Si el bucket es público
-    const { data: publicUrlData } = supabase.storage.from("product-images").getPublicUrl(filePath);
-    imageUrl = publicUrlData?.publicUrl || null;
+    if (imageFile instanceof File && imageFile.size > 0) {
+      const filePath = `${user.id}/${crypto.randomUUID()}-${imageFile.name}`;
 
-    // Fallback a signed URL si no hay pública
-    if (!imageUrl) {
-      const { data: signedData, error: signedError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("product-images")
-        .createSignedUrl(filePath, 60 * 60); // 1 hora
+        .upload(filePath, imageFile, {
+          cacheControl: "3600",
+          upsert: false,
+        });
 
-      if (signedError) throw signedError;
-      imageUrl = signedData?.signedUrl || null;
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage.from("product-images").getPublicUrl(filePath);
+      imageUrl = publicUrlData?.publicUrl || null;
+
+      if (!imageUrl) {
+        const { data: signedData, error: signedError } = await supabase.storage
+          .from("product-images")
+          .createSignedUrl(filePath, 60 * 60);
+
+        if (signedError) throw signedError;
+        imageUrl = signedData?.signedUrl || null;
+      }
+
+      if (!imageUrl) {
+        throw new Error("No se pudo obtener la URL de la imagen.");
+      }
     }
 
-    if (!imageUrl) {
-      throw new Error("No se pudo obtener la URL de la imagen.");
-    }
-
-    // 5) Insertar en tabla "products"
+    // 5) Insertar en tabla "products" con user_id obligatorio
     const { error: insertError } = await supabase.from("products").insert({
       title,
       description,

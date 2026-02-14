@@ -2,8 +2,6 @@ import { getSupabaseClient, getSupabaseConfig } from "./lib/supabase/client.js";
 import { productCardHTML } from "./components/product-card.js";
 import { fillProductForm } from "./components/product-form.js";
 import {
-  buildCreatePayload,
-  createProduct,
   deleteProduct,
   getProduct,
   inferProductShape,
@@ -838,14 +836,24 @@ window.addEventListener("popstate", async () => {
 
 uploadProductForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!activeUser || !supabase) return;
+  if (!supabase) return;
 
   try {
     await ensureProductShape();
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError) throw userError;
+    if (!user) throw new Error("Debes iniciar sesión para crear un producto.");
+
     const formData = new FormData(uploadProductForm);
     const title = String(formData.get("title") || "");
     const description = String(formData.get("description") || "");
     const price = formData.get("price");
+    const imageFile = formData.get("photo");
 
     const { errors, cleanTitle, numericPrice } = validateProductInput({ title, price });
     if (errors.length) {
@@ -853,15 +861,44 @@ uploadProductForm?.addEventListener("submit", async (event) => {
       return;
     }
 
-    const payload = buildCreatePayload({
-      shape: productShape,
-      userId: activeUser.id,
+    let imageUrl = null;
+
+    if (imageFile instanceof File && imageFile.size > 0) {
+      const filePath = `${user.id}/${crypto.randomUUID()}-${imageFile.name}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(filePath, imageFile, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage.from("product-images").getPublicUrl(filePath);
+      imageUrl = publicUrlData?.publicUrl || null;
+
+      if (!imageUrl) {
+        const { data: signedData, error: signedError } = await supabase.storage
+          .from("product-images")
+          .createSignedUrl(filePath, 60 * 60);
+
+        if (signedError) throw signedError;
+        imageUrl = signedData?.signedUrl || null;
+      }
+
+      if (!imageUrl) throw new Error("No se pudo obtener la URL de la imagen.");
+    }
+
+    const { error: insertError } = await supabase.from("products").insert({
       title: cleanTitle,
-      description,
+      description: description.trim(),
       price: numericPrice,
+      image_url: imageUrl,
+      user_id: user.id,
     });
 
-    await createProduct(supabase, productShape, payload);
+    if (insertError) throw insertError;
     uploadProductForm.reset();
     showToast("Producto creado correctamente.");
     await showMyProductsView();
