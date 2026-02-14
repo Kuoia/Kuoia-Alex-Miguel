@@ -101,3 +101,44 @@ python3 -m http.server 4173 --directory src
 3. Inicia sesión con dos usuarios distintos en dos navegadores.
 4. Entra en **Chats** (`/chats`), crea conversación por email y envía mensajes.
 5. Verifica recepción en tiempo real (sin recargar).
+
+## Listings / Products (Supabase `public.products`)
+
+Esta versión añade flujo completo de listings dentro de la SPA:
+
+- `/products`: listado público para usuarios autenticados.
+- `/products/:id`: detalle de producto + botón **Contactar** (redirige al módulo de chats como integración base).
+- `/sell`: formulario para crear producto.
+- `/my-products`: mis productos (filtrados por ownership).
+- `/my-products/:id/edit`: edición de producto.
+
+### Variables de entorno recomendadas en Vercel
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+> No uses `SUPABASE_SERVICE_ROLE_KEY` en cliente.
+> En esta implementación actual no se usa service role.
+
+### Nota sobre ownership + RLS
+
+La app asume columna de ownership tipo `user_id` (o equivalente detectado por alias: `owner_id`, `seller_id`, `author_id`).
+
+Si faltaran policies de ownership para editar/borrar, SQL sugerido (NO aplicado automáticamente por la app):
+
+```sql
+-- Update own products
+create policy "users_can_update_own_products"
+on public.products
+for update
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+-- Delete own products
+create policy "users_can_delete_own_products"
+on public.products
+for delete
+to authenticated
+using (auth.uid() = user_id);
+```

@@ -1,4 +1,17 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { getSupabaseClient, getSupabaseConfig } from "./lib/supabase/client.js";
+import { productCardHTML } from "./components/product-card.js";
+import { fillProductForm } from "./components/product-form.js";
+import {
+  buildCreatePayload,
+  createProduct,
+  deleteProduct,
+  getProduct,
+  inferProductShape,
+  listMyProducts,
+  listProducts,
+  updateProduct,
+  validateProductInput,
+} from "./lib/products.js";
 import {
   findUserIdByEmail,
   formatChatDate,
@@ -66,9 +79,23 @@ const subscriptionsView = document.getElementById("subscriptionsView");
 const topbarAuthCta = document.getElementById("topbarAuthCta");
 const planSelectButtons = document.querySelectorAll(".plan-select-btn");
 
-const supabaseUrl = document.querySelector('meta[name="supabase-url"]')?.content?.trim();
-const supabaseAnonKey = document.querySelector('meta[name="supabase-anon-key"]')?.content?.trim();
-const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+const browseProductsButton = document.getElementById("browseProductsButton");
+const myProductsButton = document.getElementById("myProductsButton");
+const productDetailView = document.getElementById("productDetailView");
+const productDetailTitle = document.getElementById("productDetailTitle");
+const productDetailBody = document.getElementById("productDetailBody");
+const productDetailBackButton = document.getElementById("productDetailBackButton");
+const contactOwnerButton = document.getElementById("contactOwnerButton");
+const myProductsView = document.getElementById("myProductsView");
+const myProductsGrid = document.getElementById("myProductsGrid");
+const myProductsStatus = document.getElementById("myProductsStatus");
+const myProductsBackButton = document.getElementById("myProductsBackButton");
+const editProductView = document.getElementById("editProductView");
+const editProductForm = document.getElementById("editProductForm");
+const editProductBackButton = document.getElementById("editProductBackButton");
+
+const { url: supabaseUrl, anonKey: supabaseAnonKey } = getSupabaseConfig();
+const supabase = getSupabaseClient();
 
 let activeUser = null;
 let selectedPlan = localStorage.getItem("kuoia:selectedPlan") || "Sin plan";
@@ -77,6 +104,12 @@ let activeConversationId = null;
 let activeConversationMembers = [];
 let conversationsCache = [];
 let activeChatChannel = null;
+
+let productShape = null;
+let productsOffset = 0;
+const PAGE_SIZE = 12;
+let activeProductDetail = null;
+let activeEditingProductId = null;
 
 const checkSupabaseConnection = async () => {
   if (!supabaseUrl || !supabaseAnonKey) {
@@ -100,74 +133,7 @@ const checkSupabaseConnection = async () => {
   }
 };
 
-const productCatalog = [
-  {
-    id: "p1",
-    title: "Kit STEM para primaria",
-    description: "Material práctico para experimentos guiados en aula de 3º a 6º.",
-    image: "https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=900&q=80",
-    location: "madrid",
-    centerType: "concertado",
-    type: "producto",
-    price: 120,
-    rating: 4.8,
-  },
-  {
-    id: "p2",
-    title: "Banco de rúbricas descargables",
-    description: "Plantillas listas para evaluar proyectos por competencias.",
-    image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=900&q=80",
-    location: "barcelona",
-    centerType: "publico",
-    type: "recurso",
-    price: 45,
-    rating: 4.6,
-  },
-  {
-    id: "p3",
-    title: "Tutorías de refuerzo en matemáticas",
-    description: "Sesiones online personalizadas para ESO y Bachillerato.",
-    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80",
-    location: "valencia",
-    centerType: "privado",
-    type: "servicio",
-    price: 32,
-    rating: 4.9,
-  },
-  {
-    id: "p4",
-    title: "Lote de libros juveniles",
-    description: "Colección en perfecto estado para biblioteca escolar.",
-    image: "https://images.unsplash.com/photo-1455885666463-9a9d53d6f438?auto=format&fit=crop&w=900&q=80",
-    location: "sevilla",
-    centerType: "publico",
-    type: "producto",
-    price: 65,
-    rating: 4.4,
-  },
-  {
-    id: "p5",
-    title: "Programación anual editable",
-    description: "Documento completo con objetivos, competencias y evidencias.",
-    image: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=900&q=80",
-    location: "madrid",
-    centerType: "privado",
-    type: "recurso",
-    price: 25,
-    rating: 4.7,
-  },
-  {
-    id: "p6",
-    title: "Armario de material Montessori",
-    description: "Set de piezas y paneles sensoriales para infantil.",
-    image: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=900&q=80",
-    location: "barcelona",
-    centerType: "concertado",
-    type: "producto",
-    price: 240,
-    rating: 4.5,
-  },
-];
+const productCatalog = [];
 
 let uploadedProductsCount = 0;
 
@@ -178,72 +144,58 @@ const showToast = (message) => {
   setTimeout(() => toast.classList.remove("show"), 2400);
 };
 
-const typeLabels = {
-  producto: "Producto",
-  recurso: "Recurso",
-  servicio: "Servicio",
-};
-
-const centerLabels = {
-  publico: "Público",
-  concertado: "Concertado",
-  privado: "Privado",
-};
-
 const normalize = (value) => String(value || "").toLowerCase();
+
+const safeValue = (row, key, fallback = "") => {
+  if (!row || !key) return fallback;
+  return row[key] ?? fallback;
+};
+
+const ensureProductShape = async () => {
+  if (!supabase) return null;
+  if (productShape) return productShape;
+  productShape = await inferProductShape(supabase);
+  return productShape;
+};
 
 const getFilteredProducts = () => {
   const query = normalize(searchInput.value).trim();
-  const location = normalize(locationFilter.value);
-  const center = normalize(centerFilter.value);
-  const type = normalize(typeFilter.value);
   const maxPrice = Number(priceRange.value);
 
   return productCatalog.filter((item) => {
-    const haystack = normalize(
-      `${item.title} ${item.description} ${item.location} ${item.centerType} ${item.type}`,
-    );
-
-    const matchQuery = !query || haystack.includes(query);
-    const matchLocation = !location || item.location === location;
-    const matchCenter = !center || item.centerType === center;
-    const matchType = !type || item.type === type;
-    const matchPrice = item.price <= maxPrice;
-
-    return matchQuery && matchLocation && matchCenter && matchType && matchPrice;
+    const title = normalize(safeValue(item, productShape?.map?.title));
+    const description = normalize(safeValue(item, productShape?.map?.description));
+    const matchQuery = !query || `${title} ${description}`.includes(query);
+    const rawPrice = Number(safeValue(item, productShape?.map?.price, 0));
+    const matchPrice = Number.isFinite(rawPrice) ? rawPrice <= maxPrice : true;
+    return matchQuery && matchPrice;
   });
 };
 
 const renderProducts = () => {
   const filteredProducts = getFilteredProducts();
 
-  marketplaceGrid.innerHTML = filteredProducts
-    .map(
-      (item) => `
-      <article class="market-card" data-id="${item.id}">
-        <img src="${item.image}" alt="${item.title}" class="product-image" loading="lazy" />
-        <div class="card-content">
-          <div class="card-meta">
-            <span class="tag">${typeLabels[item.type] || item.type}</span>
-            <span class="price">${item.price} €</span>
-          </div>
-          <h3>${item.title}</h3>
-          <p>${item.description}</p>
-          <p class="details">${item.location[0].toUpperCase() + item.location.slice(1)} · Centro ${centerLabels[item.centerType] || item.centerType}</p>
-          <p class="rating">⭐ ${item.rating.toFixed(1)}</p>
-          <div class="card-actions">
-            <button type="button" class="action-btn" data-action="chat" data-id="${item.id}">Chat</button>
-            <button type="button" class="action-btn buy" data-action="buy" data-id="${item.id}">Comprar</button>
-            <button type="button" class="action-btn" data-action="save" data-id="${item.id}">Guardar</button>
-          </div>
-        </div>
-      </article>
-    `,
-    )
-    .join("");
+  marketplaceGrid.innerHTML = filteredProducts.map((item) => productCardHTML(item, productShape)).join("");
 
-  resultsMeta.textContent = `Mostrando ${filteredProducts.length} de ${productCatalog.length} resultados.`;
+  resultsMeta.textContent = `Mostrando ${filteredProducts.length} resultados.`;
   emptyState.classList.toggle("hidden", filteredProducts.length !== 0);
+};
+
+const loadPublicProducts = async ({ reset = true } = {}) => {
+  if (!supabase || !productShape) return;
+
+  if (reset) {
+    productsOffset = 0;
+    productCatalog.length = 0;
+    marketplaceGrid.innerHTML = '<p class="empty-state">Cargando productos...</p>';
+  }
+
+  const rows = await listProducts(supabase, productShape, { limit: PAGE_SIZE, offset: productsOffset });
+  if (reset) productCatalog.length = 0;
+  productCatalog.push(...rows);
+  productsOffset += rows.length;
+
+  renderProducts();
 };
 
 const updatePriceLabel = () => {
@@ -311,6 +263,9 @@ const hideAllViews = () => {
   profileView.classList.add("hidden");
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
+  productDetailView?.classList.add("hidden");
+  myProductsView?.classList.add("hidden");
+  editProductView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
   unsubscribeActiveChat();
 };
@@ -466,19 +421,49 @@ const resolveRoute = async ({ replace = false } = {}) => {
     return;
   }
 
-  if (window.location.pathname === "/chats") {
+  const path = window.location.pathname;
+
+  if (path === "/chats") {
     await showChatRegistryView({ replace });
     return;
   }
 
-  const conversationMatch = window.location.pathname.match(/^\/chats\/([^/]+)$/);
+  const conversationMatch = path.match(/^\/chats\/([^/]+)$/);
   if (conversationMatch) {
     await refreshConversations();
     await openConversation(conversationMatch[1], { replace });
     return;
   }
 
-  showMarketplaceView(activeUser, { replace });
+  if (path === "/" || path === "/products") {
+    await showProductsView({ replace });
+    return;
+  }
+
+  const productMatch = path.match(/^\/products\/([^/]+)$/);
+  if (productMatch) {
+    await showProductDetailView(productMatch[1], { replace });
+    return;
+  }
+
+  if (path === "/sell" || path === "/products/new") {
+    showUploadProductView();
+    navigateTo("/sell", { replace });
+    return;
+  }
+
+  if (path === "/my-products") {
+    await showMyProductsView({ replace });
+    return;
+  }
+
+  const editMatch = path.match(/^\/my-products\/([^/]+)\/edit$/);
+  if (editMatch) {
+    await showEditProductView(editMatch[1], { replace });
+    return;
+  }
+
+  await showProductsView({ replace });
 };
 
 const fillProfileForm = (user) => {
@@ -502,6 +487,9 @@ const showAuthView = () => {
   profileView.classList.add("hidden");
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
+  productDetailView?.classList.add("hidden");
+  myProductsView?.classList.add("hidden");
+  editProductView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
 };
 
@@ -513,6 +501,9 @@ const showSubscriptionsView = () => {
   profileView.classList.add("hidden");
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
+  productDetailView?.classList.add("hidden");
+  myProductsView?.classList.add("hidden");
+  editProductView?.classList.add("hidden");
 
   if (activeUser) {
     topbarAuthCta.textContent = "Volver a ventas";
@@ -527,7 +518,7 @@ const showMarketplaceView = (user, { replace = false } = {}) => {
   activeUser = user;
   hideAllViews();
   marketplaceView.classList.remove("hidden");
-  navigateTo("/", { replace });
+  navigateTo("/products", { replace });
   updateAvatarUI();
   updateIndicatorsUI();
 
@@ -548,6 +539,9 @@ const showProfileView = () => {
   profileView.classList.remove("hidden");
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
+  productDetailView?.classList.add("hidden");
+  myProductsView?.classList.add("hidden");
+  editProductView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
   fillProfileForm(activeUser);
 };
@@ -560,7 +554,113 @@ const showUploadProductView = () => {
   profileView.classList.add("hidden");
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
+  productDetailView?.classList.add("hidden");
+  myProductsView?.classList.add("hidden");
+  editProductView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
+};
+
+const showProductsView = async ({ replace = false } = {}) => {
+  if (!activeUser) return;
+  hideAllViews();
+  marketplaceView.classList.remove("hidden");
+  navigateTo("/products", { replace });
+  updateAvatarUI();
+  updateIndicatorsUI();
+  await ensureProductShape();
+  updatePriceLabel();
+  await loadPublicProducts({ reset: true });
+};
+
+const renderProductDetail = (product) => {
+  if (!productShape || !productDetailBody) return;
+  const title = safeValue(product, productShape.map.title, "Sin título");
+  const description = safeValue(product, productShape.map.description, "Sin descripción");
+  const price = Number(safeValue(product, productShape.map.price, 0));
+  const image = safeValue(product, productShape.map.image_url, "https://placehold.co/800x500?text=Producto");
+  const ownerId = safeValue(product, productShape.map.user_id, "-");
+
+  productDetailTitle.textContent = title;
+  productDetailBody.innerHTML = `
+    <img src="${image}" alt="${title}" class="product-image" />
+    <p><strong>Precio:</strong> ${price.toFixed(2)} €</p>
+    <p>${description}</p>
+    <p><small>Vendedor: ${ownerId}</small></p>
+  `;
+};
+
+const showProductDetailView = async (id, { replace = false } = {}) => {
+  hideAllViews();
+  productDetailView?.classList.remove("hidden");
+  navigateTo(`/products/${id}`, { replace });
+
+  try {
+    await ensureProductShape();
+    const product = await getProduct(supabase, productShape, id);
+    if (!product) {
+      productDetailBody.innerHTML = '<p class="empty-state">Producto no encontrado.</p>';
+      return;
+    }
+    activeProductDetail = product;
+    renderProductDetail(product);
+  } catch (error) {
+    productDetailBody.innerHTML = `<p class="empty-state">${error.message}</p>`;
+  }
+};
+
+const renderMyProducts = async () => {
+  if (!activeUser || !productShape) return;
+  myProductsStatus.textContent = "Cargando mis productos...";
+  try {
+    const rows = await listMyProducts(supabase, productShape, activeUser.id);
+    if (!rows.length) {
+      myProductsGrid.innerHTML = '<p class="empty-state">Aún no has publicado productos.</p>';
+      myProductsStatus.textContent = "";
+      return;
+    }
+
+    myProductsGrid.innerHTML = rows
+      .map((item) => {
+        const id = safeValue(item, productShape.map.id, "");
+        return `${productCardHTML(item, productShape)}
+          <div class="card-actions" data-my-actions="${id}">
+            <button class="action-btn" data-my-action="edit" data-id="${id}">Editar</button>
+            <button class="action-btn buy" data-my-action="delete" data-id="${id}">Borrar</button>
+          </div>`;
+      })
+      .join("");
+
+    myProductsStatus.textContent = "";
+  } catch (error) {
+    myProductsStatus.textContent = error.message;
+  }
+};
+
+const showMyProductsView = async ({ replace = false } = {}) => {
+  hideAllViews();
+  myProductsView?.classList.remove("hidden");
+  navigateTo("/my-products", { replace });
+  await ensureProductShape();
+  await renderMyProducts();
+};
+
+const showEditProductView = async (id, { replace = false } = {}) => {
+  hideAllViews();
+  editProductView?.classList.remove("hidden");
+  navigateTo(`/my-products/${id}/edit`, { replace });
+  activeEditingProductId = id;
+
+  try {
+    await ensureProductShape();
+    const product = await getProduct(supabase, productShape, id);
+    if (!product) {
+      showToast("Producto no encontrado.");
+      return;
+    }
+    fillProductForm(editProductForm, product, productShape);
+  } catch (error) {
+    showToast(error.message);
+  }
 };
 
 const persistSelectedPlan = (planName) => {
@@ -572,21 +672,30 @@ const persistSelectedPlan = (planName) => {
 loginTab.addEventListener("click", () => setActivePanel("login"));
 registerTab.addEventListener("click", () => setActivePanel("register"));
 marketplaceSubscriptionsButton?.addEventListener("click", showSubscriptionsView);
-uploadProductButton?.addEventListener("click", showUploadProductView);
-uploadProductBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
+uploadProductButton?.addEventListener("click", () => { showUploadProductView(); navigateTo("/sell"); });
+uploadProductBackButton?.addEventListener("click", async () => showProductsView());
 profileSubscriptionsButton?.addEventListener("click", showSubscriptionsView);
 subscriptionsBackButton?.addEventListener("click", () => {
   if (activeUser) {
-    showMarketplaceView(activeUser);
+    showProductsView();
     return;
   }
   showAuthView();
 });
 profileButton?.addEventListener("click", showProfileView);
-profileBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
+profileBackButton?.addEventListener("click", async () => showProductsView());
 chatBackButton?.addEventListener("click", async () => showChatRegistryView());
 chatRegistryButton?.addEventListener("click", async () => showChatRegistryView());
-chatRegistryBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
+chatRegistryBackButton?.addEventListener("click", async () => showProductsView());
+browseProductsButton?.addEventListener("click", async () => showProductsView());
+myProductsButton?.addEventListener("click", async () => showMyProductsView());
+myProductsBackButton?.addEventListener("click", async () => showProductsView());
+productDetailBackButton?.addEventListener("click", async () => showProductsView());
+editProductBackButton?.addEventListener("click", async () => showMyProductsView());
+contactOwnerButton?.addEventListener("click", async () => {
+  // TODO: conectar con conversación por owner y product_id cuando exista mapping directo.
+  await showChatRegistryView();
+});
 generateAvatarButton?.addEventListener("click", () => {
   const currentName = profileForm?.elements?.displayName?.value || activeUser?.email || "Kuoia";
   profileAvatarData = createDefaultAvatar(currentName);
@@ -609,7 +718,7 @@ avatarUploadInput?.addEventListener("change", () => {
 });
 topbarAuthCta?.addEventListener("click", () => {
   if (activeUser) {
-    showMarketplaceView(activeUser);
+    showProductsView();
     return;
   }
 
@@ -653,7 +762,7 @@ profileForm?.addEventListener("submit", (event) => {
   }
 
   showToast("Perfil de Kuoia actualizado.");
-  showMarketplaceView(activeUser);
+  showProductsView();
 });
 
 [searchInput, locationFilter, centerFilter, typeFilter].forEach((input) => {
@@ -666,26 +775,13 @@ priceRange.addEventListener("input", () => {
   renderProducts();
 });
 
-marketplaceGrid.addEventListener("click", (event) => {
-  const target = event.target;
-  if (!(target instanceof HTMLButtonElement)) return;
-
-  const action = target.dataset.action;
-  const id = target.dataset.id;
-  const product = productCatalog.find((item) => item.id === id);
-  if (!product || !action) return;
-
-  if (action === "chat") {
-    showChatRegistryView();
-    return;
+marketplaceGrid.addEventListener("click", async (event) => {
+  const link = event.target instanceof Element ? event.target.closest('a[href^="/products/"]') : null;
+  if (link instanceof HTMLAnchorElement) {
+    event.preventDefault();
+    const id = link.getAttribute("href")?.split("/").pop();
+    if (id) await showProductDetailView(id);
   }
-
-  const actionMessages = {
-    buy: `Preparando compra de ${product.title}.`,
-    save: `${product.title} se guardó en favoritos.`,
-  };
-
-  showToast(actionMessages[action] || "Acción ejecutada");
 });
 
 chatRegistryList?.addEventListener("click", async (event) => {
@@ -740,50 +836,89 @@ window.addEventListener("popstate", async () => {
   await resolveRoute({ replace: true });
 });
 
-uploadProductForm?.addEventListener("submit", (event) => {
+uploadProductForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (!activeUser || !supabase) return;
 
-  const formData = new FormData(uploadProductForm);
-  const title = String(formData.get("title") || "").trim();
-  const description = String(formData.get("description") || "").trim();
-  const shippingAddress = String(formData.get("shippingAddress") || "").trim();
-  const size = String(formData.get("size") || "").trim();
-  const price = Number(formData.get("price") || 0);
-  const weight = Number(formData.get("weight") || 0);
-  const promotional = formData.get("promotional") === "on";
-  const [photo] = uploadProductForm.elements.photo.files || [];
+  try {
+    await ensureProductShape();
+    const formData = new FormData(uploadProductForm);
+    const title = String(formData.get("title") || "");
+    const description = String(formData.get("description") || "");
+    const price = formData.get("price");
 
-  if (!photo) {
-    showToast("Debes seleccionar una foto del producto.");
+    const { errors, cleanTitle, numericPrice } = validateProductInput({ title, price });
+    if (errors.length) {
+      showToast(errors[0]);
+      return;
+    }
+
+    const payload = buildCreatePayload({
+      shape: productShape,
+      userId: activeUser.id,
+      title: cleanTitle,
+      description,
+      price: numericPrice,
+    });
+
+    await createProduct(supabase, productShape, payload);
+    uploadProductForm.reset();
+    showToast("Producto creado correctamente.");
+    await showMyProductsView();
+  } catch (error) {
+    showToast(error.message || "No se pudo crear el producto.");
+  }
+});
+
+myProductsGrid?.addEventListener("click", async (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLButtonElement)) return;
+  const action = target.dataset.myAction;
+  const id = target.dataset.id;
+  if (!action || !id) return;
+
+  if (action === "edit") {
+    await showEditProductView(id);
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    uploadedProductsCount += 1;
-    const userLocation = normalize(activeUser?.user_metadata?.location) || "madrid";
+  if (action === "delete") {
+    try {
+      await deleteProduct(supabase, productShape, id);
+      showToast("Producto eliminado.");
+      await renderMyProducts();
+    } catch (error) {
+      showToast(error.message || "No se pudo eliminar.");
+    }
+  }
+});
 
-    productCatalog.unshift({
-      id: `up-${Date.now()}-${uploadedProductsCount}`,
-      title,
-      description: `${description} · Envío: ${shippingAddress}. Tamaño: ${size}. Peso: ${weight.toFixed(1)} kg.`,
-      image: String(reader.result || ""),
-      location: ["madrid", "barcelona", "valencia", "sevilla"].includes(userLocation) ? userLocation : "madrid",
-      centerType: "publico",
-      type: "producto",
-      price,
-      rating: promotional ? 5 : 4.5,
-    });
+editProductForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!activeEditingProductId || !productShape) return;
 
-    uploadProductForm.reset();
-    showMarketplaceView(activeUser);
-    showToast(
-      promotional
-        ? "Producto subido y promocionado a centros educativos durante 10 días."
-        : "Producto subido correctamente.",
-    );
-  };
-  reader.readAsDataURL(photo);
+  const formData = new FormData(editProductForm);
+  const title = String(formData.get("title") || "");
+  const description = String(formData.get("description") || "");
+  const price = formData.get("price");
+  const { errors, cleanTitle, numericPrice } = validateProductInput({ title, price });
+  if (errors.length) {
+    showToast(errors[0]);
+    return;
+  }
+
+  const payload = {};
+  if (productShape.map.title) payload[productShape.map.title] = cleanTitle;
+  if (productShape.map.description) payload[productShape.map.description] = description.trim();
+  if (productShape.map.price) payload[productShape.map.price] = numericPrice;
+
+  try {
+    await updateProduct(supabase, productShape, activeEditingProductId, payload);
+    showToast("Producto actualizado.");
+    await showMyProductsView();
+  } catch (error) {
+    showToast(error.message || "No se pudo actualizar.");
+  }
 });
 
 loginPanel.addEventListener("submit", async (event) => {

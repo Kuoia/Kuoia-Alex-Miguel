@@ -163,11 +163,13 @@
             <p class="subtitle" id="welcomeMessage">Explora lo que la comunidad comparte hoy.</p>
           </div>
           <div class="header-actions">
+            <button class="btn btn-secondary" id="browseProductsButton" type="button">Products</button>
+            <button class="btn btn-secondary" id="myProductsButton" type="button">Mis productos</button>
             <button class="status-chip" id="chatRegistryButton" type="button" aria-live="polite">
               💬 Chats
             </button>
             <img id="headerAvatar" class="header-avatar" alt="Avatar de perfil" />
-            <button class="btn btn-primary" id="uploadProductButton" type="button">Subir producto</button>
+            <button class="btn btn-primary" id="uploadProductButton" type="button">Vender</button>
             <button class="btn btn-secondary" id="marketplaceSubscriptionsButton" type="button">Suscripciones</button>
             <button class="btn btn-secondary" id="profileButton" type="button">Perfil</button>
             <button class="btn btn-secondary" id="logoutButton" type="button">Cerrar sesión</button>
@@ -247,36 +249,78 @@
               <input type="text" name="title" placeholder="Ej: Mochila escolar ergonómica" required />
             </label>
             <label>
-              Foto del producto
-              <input type="file" name="photo" accept="image/*" required />
+              Imagen del producto (opcional)
+              <input type="file" name="photo" accept="image/*" />
             </label>
             <label>
               Precio (€)
-              <input type="number" name="price" min="1" step="0.01" placeholder="0.00" required />
+              <input type="number" name="price" min="0" step="0.01" placeholder="0.00" required />
             </label>
             <label>
               Descripción
               <textarea name="description" rows="4" placeholder="Describe el estado, uso y detalles del producto" required></textarea>
             </label>
-            <label>
-              Dirección de envío
-              <input type="text" name="shippingAddress" placeholder="Calle, ciudad, código postal" required />
-            </label>
-            <label>
-              Tamaño
-              <input type="text" name="size" placeholder="Ej: 35 x 20 x 15 cm" required />
-            </label>
-            <label>
-              Peso (kg)
-              <input type="number" name="weight" min="0.1" step="0.1" placeholder="Ej: 1.5" required />
-            </label>
-            <label class="checkbox-field">
-              <input type="checkbox" name="promotional" />
-              <span>¿Quieres promocionar este producto a todos los centros educativos durante 10 días?</span>
-            </label>
-
             <div class="upload-product-actions">
               <button class="btn btn-primary" type="submit">Subir producto</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="products-detail-view hidden" id="productDetailView" aria-label="Detalle de producto">
+        <div class="upload-product-card">
+          <header class="upload-product-header">
+            <div>
+              <p class="eyebrow">Detalle</p>
+              <h2 id="productDetailTitle">Producto</h2>
+            </div>
+            <button class="btn btn-secondary" id="productDetailBackButton" type="button">Volver</button>
+          </header>
+          <div id="productDetailBody"></div>
+          <div class="upload-product-actions">
+            <button class="btn btn-primary" id="contactOwnerButton" type="button">Contactar</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="my-products-view hidden" id="myProductsView" aria-label="Mis productos">
+        <div class="upload-product-card">
+          <header class="upload-product-header">
+            <div>
+              <p class="eyebrow">Gestión</p>
+              <h2>Mis productos</h2>
+            </div>
+            <button class="btn btn-secondary" id="myProductsBackButton" type="button">Volver</button>
+          </header>
+          <p class="chat-status" id="myProductsStatus"></p>
+          <div class="marketplace-grid" id="myProductsGrid"></div>
+        </div>
+      </section>
+
+      <section class="edit-product-view hidden" id="editProductView" aria-label="Editar producto">
+        <div class="upload-product-card">
+          <header class="upload-product-header">
+            <div>
+              <p class="eyebrow">Editar</p>
+              <h2>Editar producto</h2>
+            </div>
+            <button class="btn btn-secondary" id="editProductBackButton" type="button">Volver</button>
+          </header>
+          <form id="editProductForm" class="upload-product-form">
+            <label>
+              Nombre del producto
+              <input type="text" name="title" required />
+            </label>
+            <label>
+              Precio (€)
+              <input type="number" name="price" min="0" step="0.01" required />
+            </label>
+            <label>
+              Descripción
+              <textarea name="description" rows="4"></textarea>
+            </label>
+            <div class="upload-product-actions">
+              <button class="btn btn-primary" type="submit">Guardar cambios</button>
             </div>
           </form>
         </div>

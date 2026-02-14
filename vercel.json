@@ -6,6 +6,26 @@
       "destination": "/src/index.html"
     },
     {
+      "source": "/my-products/(.*)",
+      "destination": "/src/index.html"
+    },
+    {
+      "source": "/my-products",
+      "destination": "/src/index.html"
+    },
+    {
+      "source": "/sell",
+      "destination": "/src/index.html"
+    },
+    {
+      "source": "/products/(.*)",
+      "destination": "/src/index.html"
+    },
+    {
+      "source": "/products",
+      "destination": "/src/index.html"
+    },
+    {
       "source": "/chats",
       "destination": "/src/index.html"
     },
