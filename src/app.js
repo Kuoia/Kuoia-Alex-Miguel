@@ -1,4 +1,13 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import {
+  findUserIdByEmail,
+  formatChatDate,
+  getConversationMessages,
+  getOrCreateConversation,
+  isConversationParticipant,
+  listConversationsForUser,
+  sendConversationMessage,
+} from "./lib/chat.js";
 
 const authCard = document.getElementById("authCard");
 const authView = document.getElementById("authView");
@@ -21,6 +30,9 @@ const chatRegistryButton = document.getElementById("chatRegistryButton");
 const chatRegistryView = document.getElementById("chatRegistryView");
 const chatRegistryBackButton = document.getElementById("chatRegistryBackButton");
 const chatRegistryList = document.getElementById("chatRegistryList");
+const newChatForm = document.getElementById("newChatForm");
+const newChatEmail = document.getElementById("newChatEmail");
+const chatRegistryStatus = document.getElementById("chatRegistryStatus");
 const generateAvatarButton = document.getElementById("generateAvatarButton");
 const chatView = document.getElementById("chatView");
 const chatBackButton = document.getElementById("chatBackButton");
@@ -31,6 +43,7 @@ const chatProductName = document.getElementById("chatProductName");
 const chatProductPrice = document.getElementById("chatProductPrice");
 const chatForm = document.getElementById("chatForm");
 const chatInput = document.getElementById("chatInput");
+const chatDetailStatus = document.getElementById("chatDetailStatus");
 const searchInput = document.getElementById("searchInput");
 const locationFilter = document.getElementById("locationFilter");
 const centerFilter = document.getElementById("centerFilter");
@@ -60,20 +73,10 @@ const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supa
 let activeUser = null;
 let selectedPlan = localStorage.getItem("kuoia:selectedPlan") || "Sin plan";
 let profileAvatarData = localStorage.getItem("kuoia:profileAvatar") || "";
-let activeChatProductId = null;
-const activeChatIds = new Set(["p1", "p2", "p3"]);
-
-const chatMessagesByProduct = {
-  p1: [
-    { sender: "buyer", name: "Lucía · Colegio Mirador", text: "Hola, ¿el kit incluye guía para docentes?", time: "09:10" },
-    { sender: "buyer", name: "Carlos · Familia", text: "¿Puedes enviar a Barcelona esta semana?", time: "09:18" },
-  ],
-  p2: [{ sender: "buyer", name: "Ainhoa · Docente", text: "Me interesa el banco de rúbricas para 1º ESO.", time: "10:02" }],
-  p3: [{ sender: "buyer", name: "Mario · Centro Sol", text: "¿Las tutorías se pueden contratar por grupo?", time: "11:30" }],
-  p4: [{ sender: "buyer", name: "Elena · AMPA", text: "¿Cuántos libros incluye el lote?", time: "12:05" }],
-  p5: [{ sender: "buyer", name: "Noa · Cole Privado", text: "¿Está alineado con LOMLOE?", time: "12:34" }],
-  p6: [{ sender: "buyer", name: "Javier · Infantil Luna", text: "¿Incluye piezas de reposición?", time: "13:15" }],
-};
+let activeConversationId = null;
+let activeConversationMembers = [];
+let conversationsCache = [];
+let activeChatChannel = null;
 
 const checkSupabaseConnection = async () => {
   if (!supabaseUrl || !supabaseAnonKey) {
@@ -295,102 +298,191 @@ const updateAvatarUI = () => {
 };
 const updateIndicatorsUI = () => {
   if (!chatRegistryButton) return;
-
-  const activeCount = Array.from(activeChatIds).filter((id) => (chatMessagesByProduct[id] || []).length > 0).length;
-  chatRegistryButton.classList.toggle("has-unread", activeCount > 0);
-  chatRegistryButton.textContent = `📒 Registro de chats (${activeCount} activos)`;
+  const chatCount = conversationsCache.length;
+  chatRegistryButton.classList.toggle("has-unread", chatCount > 0);
+  chatRegistryButton.textContent = `💬 Chats (${chatCount})`;
 };
 
-const clearChatUnread = () => {
-  updateIndicatorsUI();
-};
-
-const registerIncomingChat = () => {
-  if (activeChatProductId) activeChatIds.add(activeChatProductId);
-  updateIndicatorsUI();
-};
-
-const renderChatRegistry = () => {
-  if (!chatRegistryList) return;
-
-  const chatRows = productCatalog
-    .filter((product) => (chatMessagesByProduct[product.id] || []).length > 0)
-    .map((product) => {
-      const messages = chatMessagesByProduct[product.id] || [];
-      const lastMessage = messages[messages.length - 1];
-      const isActive = activeChatIds.has(product.id);
-      return `
-        <article class="chat-registry-item ${isActive ? "active" : "inactive"}">
-          <div>
-            <p class="chat-registry-product">${product.title}</p>
-            <p class="chat-registry-meta">${isActive ? "Activo" : "Inactivo"} · Último mensaje: ${lastMessage?.time || "--:--"}</p>
-            <p class="chat-registry-snippet">${lastMessage?.text || "Sin mensajes."}</p>
-          </div>
-          <button type="button" class="btn btn-secondary chat-registry-open-btn" data-id="${product.id}">Abrir chat</button>
-        </article>
-      `;
-    });
-
-  chatRegistryList.innerHTML = chatRows.length ? chatRows.join("") : '<p class="empty-state">Aún no hay chats registrados.</p>';
-};
-
-const showChatRegistryView = () => {
+const hideAllViews = () => {
   authView.classList.add("hidden");
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.add("hidden");
   uploadProductView?.classList.add("hidden");
   profileView.classList.add("hidden");
+  chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
-  chatRegistryView?.classList.remove("hidden");
   topbarAuthCta.classList.add("hidden");
-  renderChatRegistry();
+  unsubscribeActiveChat();
 };
 
+const chatPathFor = (conversationId) => (conversationId ? `/chats/${conversationId}` : "/chats");
 
-const renderChatMessages = () => {
-  if (!chatMessages || !activeChatProductId) return;
+const navigateTo = (path, { replace = false } = {}) => {
+  if (window.location.pathname === path) return;
+  const fn = replace ? window.history.replaceState : window.history.pushState;
+  fn.call(window.history, {}, "", path);
+};
 
-  const messages = chatMessagesByProduct[activeChatProductId] || [];
-  chatMessages.innerHTML = messages
-    .map(
-      (message) => `
-      <article class="chat-bubble ${message.sender}">
-        <small>${message.sender === "buyer" ? message.name : "Tú"} · ${message.time}</small>
-        <p>${message.text}</p>
-      </article>
-    `,
-    )
+const setChatRegistryStatus = (message = "") => {
+  if (chatRegistryStatus) chatRegistryStatus.textContent = message;
+};
+
+const setChatDetailStatus = (message = "") => {
+  if (chatDetailStatus) chatDetailStatus.textContent = message;
+};
+
+const renderChatRegistry = () => {
+  if (!chatRegistryList || !activeUser) return;
+
+  if (!conversationsCache.length) {
+    chatRegistryList.innerHTML = '<p class="empty-state">Aún no tienes conversaciones. Usa "Nuevo chat" para empezar.</p>';
+    return;
+  }
+
+  chatRegistryList.innerHTML = conversationsCache
+    .map((conversation) => {
+      const peerId = conversation.participants.find((id) => id !== activeUser.id) || "Usuario";
+      const lastMessage = conversation.lastMessage;
+      const lastDate = formatChatDate(conversation.last_message_at || lastMessage?.created_at);
+      return `
+        <article class="chat-registry-item">
+          <div>
+            <p class="chat-registry-product">${peerId}</p>
+            <p class="chat-registry-meta">${lastDate || "Sin fecha"}</p>
+            <p class="chat-registry-snippet">${lastMessage?.content || "Sin mensajes todavía."}</p>
+          </div>
+          <button type="button" class="btn btn-secondary chat-registry-open-btn" data-conversation-id="${conversation.id}">Abrir chat</button>
+        </article>
+      `;
+    })
     .join("");
+};
 
+const refreshConversations = async () => {
+  if (!supabase || !activeUser) return;
+  setChatRegistryStatus("Cargando conversaciones...");
+  try {
+    conversationsCache = await listConversationsForUser(supabase, activeUser.id);
+    setChatRegistryStatus("");
+    updateIndicatorsUI();
+    renderChatRegistry();
+  } catch (error) {
+    setChatRegistryStatus(error.message || "Error al cargar conversaciones.");
+  }
+};
+
+const unsubscribeActiveChat = async () => {
+  if (!activeChatChannel || !supabase) return;
+  await supabase.removeChannel(activeChatChannel);
+  activeChatChannel = null;
+};
+
+const renderChatMessages = (messages = []) => {
+  if (!chatMessages || !activeUser) return;
+  chatMessages.innerHTML = messages
+    .map((message) => {
+      const own = message.sender_id === activeUser.id;
+      const who = own ? "Tú" : "Contacto";
+      return `
+        <article class="chat-bubble ${own ? "self" : "buyer"}">
+          <small>${who} · ${formatChatDate(message.created_at)}</small>
+          <p>${message.content || ""}</p>
+        </article>
+      `;
+    })
+    .join("");
   chatMessages.scrollTop = chatMessages.scrollHeight;
 };
 
-const openChat = (productId) => {
-  const product = productCatalog.find((item) => item.id === productId);
-  if (!product) return;
+const subscribeConversation = (conversationId) => {
+  if (!supabase || !conversationId) return;
 
-  activeChatProductId = product.id;
-  activeChatIds.add(product.id);
-  const currentMessages = chatMessagesByProduct[product.id] || [];
-  const firstBuyerName = currentMessages.find((message) => message.sender === "buyer")?.name || "Comprador interesado";
+  activeChatChannel = supabase
+    .channel(`chat:${conversationId}`)
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` },
+      async (payload) => {
+        try {
+          const messages = await getConversationMessages(supabase, conversationId);
+          renderChatMessages(messages);
+          await refreshConversations();
+        } catch (_error) {
+          setChatDetailStatus("Error recibiendo mensajes en tiempo real.");
+        }
+        if (payload.new.sender_id !== activeUser?.id) showToast("Nuevo mensaje recibido.");
+      },
+    )
+    .subscribe();
+};
 
-  if (chatTitle) chatTitle.textContent = "Chat de compradores";
-  if (chatContactName) chatContactName.textContent = firstBuyerName;
-  if (chatProductName) chatProductName.textContent = product.title;
-  if (chatProductPrice) chatProductPrice.textContent = `${product.price} €`;
+const openConversation = async (conversationId, { replace = false } = {}) => {
+  if (!supabase || !activeUser) return;
 
-  authView.classList.add("hidden");
-  marketplaceView.classList.add("hidden");
-  subscriptionsView.classList.add("hidden");
-  profileView.classList.add("hidden");
-  chatRegistryView?.classList.add("hidden");
+  hideAllViews();
   chatView?.classList.remove("hidden");
-  topbarAuthCta.classList.add("hidden");
-  clearChatUnread();
-  renderChatMessages();
+  navigateTo(chatPathFor(conversationId), { replace });
+  activeConversationId = conversationId;
+  setChatDetailStatus("Cargando conversación...");
+
+  try {
+    const allowed = await isConversationParticipant(supabase, conversationId, activeUser.id);
+    if (!allowed) {
+      setChatDetailStatus("No autorizado para ver esta conversación.");
+      chatMessages.innerHTML = "";
+      return;
+    }
+
+    await unsubscribeActiveChat();
+    const messages = await getConversationMessages(supabase, conversationId);
+    const conversation = conversationsCache.find((entry) => entry.id === conversationId);
+    activeConversationMembers = conversation?.participants || [];
+
+    if (chatTitle) chatTitle.textContent = "Conversación 1:1";
+    if (chatContactName) chatContactName.textContent = activeConversationMembers.find((id) => id !== activeUser.id) || "Usuario";
+    if (chatProductName) chatProductName.textContent = conversationId;
+    if (chatProductPrice) chatProductPrice.textContent = "En línea";
+
+    renderChatMessages(messages);
+    subscribeConversation(conversationId);
+    setChatDetailStatus(messages.length ? "" : "Sin mensajes todavía. Escribe el primero.");
+  } catch (error) {
+    setChatDetailStatus(error.message || "Error cargando la conversación.");
+  }
+};
+
+const showChatRegistryView = async ({ replace = false } = {}) => {
+  if (!activeUser) return;
+  hideAllViews();
+  chatRegistryView?.classList.remove("hidden");
+  navigateTo("/chats", { replace });
+  await refreshConversations();
+};
+
+const resolveRoute = async ({ replace = false } = {}) => {
+  if (!activeUser) {
+    await unsubscribeActiveChat();
+    showAuthView();
+    return;
+  }
+
+  if (window.location.pathname === "/chats") {
+    await showChatRegistryView({ replace });
+    return;
+  }
+
+  const conversationMatch = window.location.pathname.match(/^\/chats\/([^/]+)$/);
+  if (conversationMatch) {
+    await refreshConversations();
+    await openConversation(conversationMatch[1], { replace });
+    return;
+  }
+
+  showMarketplaceView(activeUser, { replace });
 };
 
 const fillProfileForm = (user) => {
+
   if (!profileForm) return;
   const metadata = user?.user_metadata || {};
   const displayName = String(metadata.displayName || [metadata.firstName, metadata.lastName].filter(Boolean).join(" ").trim());
@@ -431,16 +523,11 @@ const showSubscriptionsView = () => {
   topbarAuthCta.classList.add("hidden");
 };
 
-const showMarketplaceView = (user) => {
+const showMarketplaceView = (user, { replace = false } = {}) => {
   activeUser = user;
-  authView.classList.add("hidden");
+  hideAllViews();
   marketplaceView.classList.remove("hidden");
-  subscriptionsView.classList.add("hidden");
-  uploadProductView?.classList.add("hidden");
-  profileView.classList.add("hidden");
-  chatRegistryView?.classList.add("hidden");
-  chatView?.classList.add("hidden");
-  topbarAuthCta.classList.add("hidden");
+  navigateTo("/", { replace });
   updateAvatarUI();
   updateIndicatorsUI();
 
@@ -497,8 +584,8 @@ subscriptionsBackButton?.addEventListener("click", () => {
 });
 profileButton?.addEventListener("click", showProfileView);
 profileBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
-chatBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
-chatRegistryButton?.addEventListener("click", showChatRegistryView);
+chatBackButton?.addEventListener("click", async () => showChatRegistryView());
+chatRegistryButton?.addEventListener("click", async () => showChatRegistryView());
 chatRegistryBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
 generateAvatarButton?.addEventListener("click", () => {
   const currentName = profileForm?.elements?.displayName?.value || activeUser?.email || "Kuoia";
@@ -589,7 +676,7 @@ marketplaceGrid.addEventListener("click", (event) => {
   if (!product || !action) return;
 
   if (action === "chat") {
-    openChat(product.id);
+    showChatRegistryView();
     return;
   }
 
@@ -601,51 +688,56 @@ marketplaceGrid.addEventListener("click", (event) => {
   showToast(actionMessages[action] || "Acción ejecutada");
 });
 
-chatRegistryList?.addEventListener("click", (event) => {
+chatRegistryList?.addEventListener("click", async (event) => {
   const target = event.target;
   if (!(target instanceof HTMLButtonElement)) return;
 
-  const productId = target.dataset.id;
-  if (!productId) return;
-  openChat(productId);
+  const conversationId = target.dataset.conversationId;
+  if (!conversationId) return;
+  await openConversation(conversationId);
 });
 
-chatForm?.addEventListener("submit", (event) => {
+newChatForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!activeChatProductId || !chatInput) return;
+  if (!activeUser || !supabase || !newChatEmail) return;
 
+  const email = newChatEmail.value.trim();
+  setChatRegistryStatus("Creando conversación...");
+
+  try {
+    const user = await findUserIdByEmail(supabase, email);
+    const conversation = await getOrCreateConversation(supabase, activeUser.id, user.id);
+    newChatForm.reset();
+    await refreshConversations();
+    await openConversation(conversation.id);
+    setChatRegistryStatus("");
+  } catch (error) {
+    setChatRegistryStatus(error.message || "No fue posible crear el chat.");
+  }
+});
+
+chatForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!activeConversationId || !chatInput || !activeUser || !supabase) return;
   const message = chatInput.value.trim();
   if (!message) return;
 
-  if (!chatMessagesByProduct[activeChatProductId]) chatMessagesByProduct[activeChatProductId] = [];
-  chatMessagesByProduct[activeChatProductId].push({
-    sender: "self",
-    name: "Tú",
-    text: message,
-    time: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
-  });
+  try {
+    await sendConversationMessage(supabase, activeConversationId, activeUser.id, message);
+    chatForm.reset();
+    const messages = await getConversationMessages(supabase, activeConversationId);
+    renderChatMessages(messages);
+    await refreshConversations();
+    setChatDetailStatus("");
+  } catch (error) {
+    setChatDetailStatus(error.message || "No fue posible enviar el mensaje.");
+  }
+});
 
-  renderChatMessages();
-  chatForm.reset();
 
-  window.setTimeout(() => {
-    if (!activeChatProductId) return;
 
-    chatMessagesByProduct[activeChatProductId].push({
-      sender: "buyer",
-      name: "Comprador interesado",
-      text: "¡Gracias! Te confirmo en breve.",
-      time: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
-    });
-
-    if (!chatView || chatView.classList.contains("hidden")) {
-      registerIncomingChat();
-      showToast("Tienes un nuevo mensaje de chat.");
-      return;
-    }
-
-    renderChatMessages();
-  }, 2200);
+window.addEventListener("popstate", async () => {
+  await resolveRoute({ replace: true });
 });
 
 uploadProductForm?.addEventListener("submit", (event) => {
@@ -713,7 +805,8 @@ loginPanel.addEventListener("submit", async (event) => {
     return;
   }
 
-  showMarketplaceView(data.user);
+  activeUser = data.user;
+  await resolveRoute({ replace: true });
   showToast("Inicio de sesión exitoso ✨");
   loginPanel.reset();
 });
@@ -757,13 +850,15 @@ registerPanel.addEventListener("submit", async (event) => {
   if (data.user) {
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError || !signInData.user) {
-      showMarketplaceView(data.user);
+      activeUser = data.user;
+  await resolveRoute({ replace: true });
       showToast("Cuenta creada. Activa tu email después, pero ya puedes explorar el inicio.");
       registerPanel.reset();
       return;
     }
 
-    showMarketplaceView(signInData.user);
+    activeUser = signInData.user;
+    await resolveRoute({ replace: true });
     showToast("Usuario creado correctamente ✨");
     registerPanel.reset();
   }
@@ -771,6 +866,7 @@ registerPanel.addEventListener("submit", async (event) => {
 
 logoutButton.addEventListener("click", async () => {
   if (supabase) await supabase.auth.signOut();
+  await unsubscribeActiveChat();
   showAuthView();
   showToast("Sesión cerrada.");
   setActivePanel("login");
@@ -783,18 +879,24 @@ const connectionStatus = await checkSupabaseConnection();
 if (!connectionStatus.ok) showToast(connectionStatus.message);
 
 if (supabase) {
-  supabase.auth.onAuthStateChange((_event, session) => {
+  supabase.auth.onAuthStateChange(async (_event, session) => {
     if (session?.user) {
-      showMarketplaceView(session.user);
+      activeUser = session.user;
+      await resolveRoute({ replace: true });
       return;
     }
+    activeUser = null;
+    await unsubscribeActiveChat();
     showAuthView();
   });
 
   const { data } = await supabase.auth.getSession();
-  if (data.session?.user) showMarketplaceView(data.session.user);
-  else showAuthView();
+  if (data.session?.user) {
+    activeUser = data.session.user;
+    await resolveRoute({ replace: true });
+  } else showAuthView();
 } else {
+  await unsubscribeActiveChat();
   showAuthView();
   showToast("Agrega tus credenciales de Supabase para habilitar autenticación real.");
 }

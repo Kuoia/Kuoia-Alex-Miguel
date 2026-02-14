@@ -164,7 +164,7 @@
           </div>
           <div class="header-actions">
             <button class="status-chip" id="chatRegistryButton" type="button" aria-live="polite">
-              📒 Registro de chats
+              💬 Chats
             </button>
             <img id="headerAvatar" class="header-avatar" alt="Avatar de perfil" />
             <button class="btn btn-primary" id="uploadProductButton" type="button">Subir producto</button>
@@ -282,40 +282,51 @@
         </div>
       </section>
 
-      <section class="chat-registry-view hidden" id="chatRegistryView" aria-label="Registro de chats activos e inactivos">
+      <section class="chat-registry-view hidden" id="chatRegistryView" aria-label="Chats 1:1 activos e inactivos">
         <div class="chat-registry-card">
           <header class="chat-registry-header">
             <div>
               <p class="eyebrow">Historial</p>
-              <h2>Registro de chats</h2>
-              <p class="subtitle">Consulta y abre chats activos o inactivos desde un único panel.</p>
+              <h2>Chats 1:1</h2>
+              <p class="subtitle">Crea un chat por email y entra a tus conversaciones en tiempo real.</p>
             </div>
             <button class="btn btn-secondary" id="chatRegistryBackButton" type="button">Volver al inicio</button>
           </header>
 
+          <form id="newChatForm" class="new-chat-form">
+            <label for="newChatEmail">Nuevo chat por email</label>
+            <div class="chat-input-row">
+              <input id="newChatEmail" name="email" type="email" placeholder="usuario@dominio.com" required />
+              <button class="btn btn-primary" type="submit">Crear / abrir</button>
+            </div>
+          </form>
+
+          <p class="chat-status" id="chatRegistryStatus" role="status" aria-live="polite"></p>
           <div class="chat-registry-list" id="chatRegistryList"></div>
         </div>
       </section>
 
 
-      <section class="chat-view hidden" id="chatView" aria-label="Chat con compradores">
+      <section class="chat-view hidden" id="chatView" aria-label="Chat 1:1">
         <div class="chat-card">
           <header class="chat-header">
             <div>
               <p class="eyebrow">Mensajes</p>
-              <h2 id="chatTitle">Chat de compradores</h2>
-              <p class="subtitle">Revisa y responde mensajes de compradores interesados.</p>
+              <h2 id="chatTitle">Conversación</h2>
+              <p class="subtitle">Mensajería privada en tiempo real con usuarios autenticados.</p>
             </div>
             <button class="btn btn-secondary" id="chatBackButton" type="button">Volver al inicio</button>
           </header>
 
-          <section class="chat-highlight" aria-label="Resumen del contacto y producto">
+          <section class="chat-highlight" aria-label="Resumen de conversación">
             <div>
-              <p class="chat-contact-name" id="chatContactName">Comprador interesado</p>
-              <p class="chat-product-meta">Producto: <span id="chatProductName">-</span></p>
+              <p class="chat-contact-name" id="chatContactName">Usuario</p>
+              <p class="chat-product-meta">Conversation ID: <span id="chatProductName">-</span></p>
             </div>
-            <p class="chat-product-price" id="chatProductPrice">0 €</p>
+            <p class="chat-product-price" id="chatProductPrice">En línea</p>
           </section>
+
+          <p class="chat-status" id="chatDetailStatus" role="status" aria-live="polite"></p>
 
           <div class="chat-messages" id="chatMessages"></div>
 
