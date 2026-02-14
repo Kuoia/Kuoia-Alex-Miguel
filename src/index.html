@@ -167,6 +167,7 @@
               📒 Registro de chats
             </button>
             <img id="headerAvatar" class="header-avatar" alt="Avatar de perfil" />
+            <button class="btn btn-primary" id="uploadProductButton" type="button">Subir producto</button>
             <button class="btn btn-secondary" id="marketplaceSubscriptionsButton" type="button">Suscripciones</button>
             <button class="btn btn-secondary" id="profileButton" type="button">Perfil</button>
             <button class="btn btn-secondary" id="logoutButton" type="button">Cerrar sesión</button>
@@ -226,6 +227,58 @@
             <div class="marketplace-grid" id="marketplaceGrid"></div>
             <p class="empty-state hidden" id="emptyState">No se encontraron productos con esos filtros.</p>
           </section>
+        </div>
+      </section>
+
+      <section class="upload-product-view hidden" id="uploadProductView" aria-label="Subir producto">
+        <div class="upload-product-card">
+          <header class="upload-product-header">
+            <div>
+              <p class="eyebrow">Publica tu producto</p>
+              <h2>Subir nuevo producto</h2>
+              <p class="subtitle">Completa los datos para publicar tu producto en el marketplace.</p>
+            </div>
+            <button class="btn btn-secondary" id="uploadProductBackButton" type="button">Volver</button>
+          </header>
+
+          <form id="uploadProductForm" class="upload-product-form">
+            <label>
+              Nombre del producto
+              <input type="text" name="title" placeholder="Ej: Mochila escolar ergonómica" required />
+            </label>
+            <label>
+              Foto del producto
+              <input type="file" name="photo" accept="image/*" required />
+            </label>
+            <label>
+              Precio (€)
+              <input type="number" name="price" min="1" step="0.01" placeholder="0.00" required />
+            </label>
+            <label>
+              Descripción
+              <textarea name="description" rows="4" placeholder="Describe el estado, uso y detalles del producto" required></textarea>
+            </label>
+            <label>
+              Dirección de envío
+              <input type="text" name="shippingAddress" placeholder="Calle, ciudad, código postal" required />
+            </label>
+            <label>
+              Tamaño
+              <input type="text" name="size" placeholder="Ej: 35 x 20 x 15 cm" required />
+            </label>
+            <label>
+              Peso (kg)
+              <input type="number" name="weight" min="0.1" step="0.1" placeholder="Ej: 1.5" required />
+            </label>
+            <label class="checkbox-field">
+              <input type="checkbox" name="promotional" />
+              <span>¿Quieres promocionar este producto a todos los centros educativos durante 10 días?</span>
+            </label>
+
+            <div class="upload-product-actions">
+              <button class="btn btn-primary" type="submit">Subir producto</button>
+            </div>
+          </form>
         </div>
       </section>
 

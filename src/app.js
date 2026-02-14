@@ -3,6 +3,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const authCard = document.getElementById("authCard");
 const authView = document.getElementById("authView");
 const marketplaceView = document.getElementById("marketplaceView");
+const uploadProductView = document.getElementById("uploadProductView");
 const profileView = document.getElementById("profileView");
 const loginTab = document.getElementById("loginTab");
 const registerTab = document.getElementById("registerTab");
@@ -43,6 +44,9 @@ const emptyState = document.getElementById("emptyState");
 const toast = document.getElementById("toast");
 const networkCanvas = document.getElementById("networkCanvas");
 const marketplaceSubscriptionsButton = document.getElementById("marketplaceSubscriptionsButton");
+const uploadProductButton = document.getElementById("uploadProductButton");
+const uploadProductBackButton = document.getElementById("uploadProductBackButton");
+const uploadProductForm = document.getElementById("uploadProductForm");
 const profileSubscriptionsButton = document.getElementById("profileSubscriptionsButton");
 const subscriptionsBackButton = document.getElementById("subscriptionsBackButton");
 const subscriptionsView = document.getElementById("subscriptionsView");
@@ -161,6 +165,8 @@ const productCatalog = [
     rating: 4.5,
   },
 ];
+
+let uploadedProductsCount = 0;
 
 const showToast = (message) => {
   if (!toast) return;
@@ -332,6 +338,7 @@ const showChatRegistryView = () => {
   authView.classList.add("hidden");
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.add("hidden");
+  uploadProductView?.classList.add("hidden");
   profileView.classList.add("hidden");
   chatView?.classList.add("hidden");
   chatRegistryView?.classList.remove("hidden");
@@ -399,6 +406,7 @@ const showAuthView = () => {
   authView.classList.remove("hidden");
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.add("hidden");
+  uploadProductView?.classList.add("hidden");
   profileView.classList.add("hidden");
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
@@ -409,6 +417,7 @@ const showSubscriptionsView = () => {
   authView.classList.add("hidden");
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.remove("hidden");
+  uploadProductView?.classList.add("hidden");
   profileView.classList.add("hidden");
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
@@ -427,6 +436,7 @@ const showMarketplaceView = (user) => {
   authView.classList.add("hidden");
   marketplaceView.classList.remove("hidden");
   subscriptionsView.classList.add("hidden");
+  uploadProductView?.classList.add("hidden");
   profileView.classList.add("hidden");
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
@@ -447,11 +457,23 @@ const showProfileView = () => {
   authView.classList.add("hidden");
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.add("hidden");
+  uploadProductView?.classList.add("hidden");
   profileView.classList.remove("hidden");
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
   fillProfileForm(activeUser);
+};
+
+const showUploadProductView = () => {
+  authView.classList.add("hidden");
+  marketplaceView.classList.add("hidden");
+  subscriptionsView.classList.add("hidden");
+  uploadProductView?.classList.remove("hidden");
+  profileView.classList.add("hidden");
+  chatRegistryView?.classList.add("hidden");
+  chatView?.classList.add("hidden");
+  topbarAuthCta.classList.add("hidden");
 };
 
 const persistSelectedPlan = (planName) => {
@@ -463,6 +485,8 @@ const persistSelectedPlan = (planName) => {
 loginTab.addEventListener("click", () => setActivePanel("login"));
 registerTab.addEventListener("click", () => setActivePanel("register"));
 marketplaceSubscriptionsButton?.addEventListener("click", showSubscriptionsView);
+uploadProductButton?.addEventListener("click", showUploadProductView);
+uploadProductBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
 profileSubscriptionsButton?.addEventListener("click", showSubscriptionsView);
 subscriptionsBackButton?.addEventListener("click", () => {
   if (activeUser) {
@@ -622,6 +646,52 @@ chatForm?.addEventListener("submit", (event) => {
 
     renderChatMessages();
   }, 2200);
+});
+
+uploadProductForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const formData = new FormData(uploadProductForm);
+  const title = String(formData.get("title") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const shippingAddress = String(formData.get("shippingAddress") || "").trim();
+  const size = String(formData.get("size") || "").trim();
+  const price = Number(formData.get("price") || 0);
+  const weight = Number(formData.get("weight") || 0);
+  const promotional = formData.get("promotional") === "on";
+  const [photo] = uploadProductForm.elements.photo.files || [];
+
+  if (!photo) {
+    showToast("Debes seleccionar una foto del producto.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    uploadedProductsCount += 1;
+    const userLocation = normalize(activeUser?.user_metadata?.location) || "madrid";
+
+    productCatalog.unshift({
+      id: `up-${Date.now()}-${uploadedProductsCount}`,
+      title,
+      description: `${description} · Envío: ${shippingAddress}. Tamaño: ${size}. Peso: ${weight.toFixed(1)} kg.`,
+      image: String(reader.result || ""),
+      location: ["madrid", "barcelona", "valencia", "sevilla"].includes(userLocation) ? userLocation : "madrid",
+      centerType: "publico",
+      type: "producto",
+      price,
+      rating: promotional ? 5 : 4.5,
+    });
+
+    uploadProductForm.reset();
+    showMarketplaceView(activeUser);
+    showToast(
+      promotional
+        ? "Producto subido y promocionado a centros educativos durante 10 días."
+        : "Producto subido correctamente.",
+    );
+  };
+  reader.readAsDataURL(photo);
 });
 
 loginPanel.addEventListener("submit", async (event) => {
