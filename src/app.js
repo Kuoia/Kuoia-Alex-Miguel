@@ -39,7 +39,8 @@ const marketplaceGrid = document.getElementById("marketplaceGrid");
 const emptyState = document.getElementById("emptyState");
 const toast = document.getElementById("toast");
 const networkCanvas = document.getElementById("networkCanvas");
-const subscriptionsButton = document.getElementById("subscriptionsButton");
+const marketplaceSubscriptionsButton = document.getElementById("marketplaceSubscriptionsButton");
+const profileSubscriptionsButton = document.getElementById("profileSubscriptionsButton");
 const subscriptionsBackButton = document.getElementById("subscriptionsBackButton");
 const subscriptionsView = document.getElementById("subscriptionsView");
 const topbarAuthCta = document.getElementById("topbarAuthCta");
@@ -406,8 +407,15 @@ const persistSelectedPlan = (planName) => {
 
 loginTab.addEventListener("click", () => setActivePanel("login"));
 registerTab.addEventListener("click", () => setActivePanel("register"));
-subscriptionsButton?.addEventListener("click", showSubscriptionsView);
-subscriptionsBackButton?.addEventListener("click", showAuthView);
+marketplaceSubscriptionsButton?.addEventListener("click", showSubscriptionsView);
+profileSubscriptionsButton?.addEventListener("click", showSubscriptionsView);
+subscriptionsBackButton?.addEventListener("click", () => {
+  if (activeUser) {
+    showMarketplaceView(activeUser);
+    return;
+  }
+  showAuthView();
+});
 profileButton?.addEventListener("click", showProfileView);
 profileBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
 chatBackButton?.addEventListener("click", () => showMarketplaceView(activeUser));
