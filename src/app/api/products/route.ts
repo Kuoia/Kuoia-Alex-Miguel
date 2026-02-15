@@ -1,9 +1,11 @@
+export const runtime = "nodejs";
+
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,9 +25,20 @@ export async function POST(request: Request) {
   );
 
   const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
+
+  const {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
+
+  console.log("AUTH SESSION:", session, user);
+
+  if (sessionError) {
+    console.error("AUTH SESSION ERROR:", sessionError);
+  }
 
   if (userError) {
     return NextResponse.json(
@@ -61,12 +74,16 @@ export async function POST(request: Request) {
     const filePath = `${user.id}/${crypto.randomUUID()}.${extension}`;
     const fileBuffer = Buffer.from(await image.arrayBuffer());
 
-    const { error: uploadError } = await supabase.storage
+    const uploadResult = await supabase.storage
       .from("product-images")
       .upload(filePath, fileBuffer, {
         contentType: image.type || "application/octet-stream",
         upsert: false,
       });
+
+    console.log("UPLOAD RESULT:", uploadResult);
+
+    const { error: uploadError } = uploadResult;
 
     if (uploadError) {
       return NextResponse.json({ error: uploadError.message }, { status: 400 });
@@ -79,7 +96,7 @@ export async function POST(request: Request) {
     imageUrl = publicUrlData.publicUrl;
   }
 
-  const { data: product, error: insertError } = await supabase
+  const insertResult = await supabase
     .from("products")
     .insert({
       title,
@@ -90,6 +107,10 @@ export async function POST(request: Request) {
     })
     .select()
     .single();
+
+  console.log("INSERT RESULT:", insertResult);
+
+  const { data: product, error: insertError } = insertResult;
 
   if (insertError) {
     return NextResponse.json({ error: insertError.message }, { status: 400 });
