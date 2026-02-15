@@ -841,6 +841,16 @@ uploadProductForm?.addEventListener("submit", async (event) => {
   try {
     await ensureProductShape();
 
+    // 0) Log de sesión/autenticación justo antes de operaciones de storage/DB.
+    const {
+      data: { session, user: sessionUser },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+    console.log("AUTH SESSION:", session, sessionUser);
+    if (sessionError) {
+      console.error("AUTH SESSION ERROR:", sessionError);
+    }
+
     const {
       data: { user },
       error: userError,
@@ -866,12 +876,18 @@ uploadProductForm?.addEventListener("submit", async (event) => {
     if (imageFile instanceof File && imageFile.size > 0) {
       const filePath = `${user.id}/${crypto.randomUUID()}-${imageFile.name}`;
 
-      const { error: uploadError } = await supabase.storage
+      // 3) Intento de subida al bucket de storage.
+      const uploadResult = await supabase.storage
         .from("product-images")
         .upload(filePath, imageFile, {
           cacheControl: "3600",
           upsert: false,
         });
+      console.log("UPLOAD RESULT:", uploadResult);
+      const { error: uploadError } = uploadResult;
+      if (uploadError) {
+        console.error("UPLOAD ERROR:", uploadError);
+      }
 
       if (uploadError) throw uploadError;
 
@@ -890,13 +906,19 @@ uploadProductForm?.addEventListener("submit", async (event) => {
       if (!imageUrl) throw new Error("No se pudo obtener la URL de la imagen.");
     }
 
-    const { error: insertError } = await supabase.from("products").insert({
+    // 4) Intento de inserción en la tabla products.
+    const insertResult = await supabase.from("products").insert({
       title: cleanTitle,
       description: description.trim(),
       price: numericPrice,
       image_url: imageUrl,
       user_id: user.id,
     });
+    console.log("INSERT RESULT:", insertResult);
+    const { error: insertError } = insertResult;
+    if (insertError) {
+      console.error("INSERT ERROR:", insertError);
+    }
 
     if (insertError) throw insertError;
     uploadProductForm.reset();

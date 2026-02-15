@@ -9,6 +9,16 @@ export const handleSubmit = async (event) => {
   setLoading(true);
 
   try {
+    // 0) Log de sesión/autenticación justo antes de operaciones de storage/DB.
+    const {
+      data: { session, user: sessionUser },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+    console.log("AUTH SESSION:", session, sessionUser);
+    if (sessionError) {
+      console.error("AUTH SESSION ERROR:", sessionError);
+    }
+
     // 1) Comprobar sesión y obtener usuario con supabase.auth.getUser()
     const {
       data: { user },
@@ -39,12 +49,18 @@ export const handleSubmit = async (event) => {
     if (imageFile instanceof File && imageFile.size > 0) {
       const filePath = `${user.id}/${crypto.randomUUID()}-${imageFile.name}`;
 
-      const { error: uploadError } = await supabase.storage
+      // 3) Intento de subida al bucket de storage.
+      const uploadResult = await supabase.storage
         .from("product-images")
         .upload(filePath, imageFile, {
           cacheControl: "3600",
           upsert: false,
         });
+      console.log("UPLOAD RESULT:", uploadResult);
+      const { error: uploadError } = uploadResult;
+      if (uploadError) {
+        console.error("UPLOAD ERROR:", uploadError);
+      }
 
       if (uploadError) throw uploadError;
 
@@ -66,13 +82,19 @@ export const handleSubmit = async (event) => {
     }
 
     // 5) Insertar en tabla "products" con user_id obligatorio
-    const { error: insertError } = await supabase.from("products").insert({
+    // 4) Intento de inserción en la tabla products.
+    const insertResult = await supabase.from("products").insert({
       title,
       description,
       price,
       image_url: imageUrl,
       user_id: user.id,
     });
+    console.log("INSERT RESULT:", insertResult);
+    const { error: insertError } = insertResult;
+    if (insertError) {
+      console.error("INSERT ERROR:", insertError);
+    }
 
     if (insertError) throw insertError;
 
