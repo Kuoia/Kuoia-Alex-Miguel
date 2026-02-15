@@ -122,7 +122,6 @@ main {
 .profile-view,
 .upload-product-view,
 .products-detail-view,
-.my-products-view,
 .edit-product-view,
 .chat-registry-view,
 .chat-view {
@@ -594,7 +593,6 @@ textarea:focus {
 
 .upload-product-view,
 .products-detail-view,
-.my-products-view,
 .edit-product-view,
 .profile-view,
 .chat-registry-view,
@@ -630,6 +628,24 @@ textarea:focus {
 
 .profile-actions {
   justify-content: space-between;
+}
+
+
+.profile-products-shell {
+  grid-column: 1 / -1;
+  margin-top: 0.75rem;
+  border: 1px solid #c7daf8;
+  border-radius: var(--radius-sm);
+  background: #f8fbff;
+  padding: 0.9rem;
+}
+
+.profile-products-header h3 {
+  margin: 0.2rem 0 0;
+}
+
+.profile-products-shell .subtitle {
+  margin: 0.35rem 0 0.7rem;
 }
 
 .avatar-editor {

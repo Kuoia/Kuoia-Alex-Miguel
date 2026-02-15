@@ -78,16 +78,14 @@ const topbarAuthCta = document.getElementById("topbarAuthCta");
 const planSelectButtons = document.querySelectorAll(".plan-select-btn");
 
 const browseProductsButton = document.getElementById("browseProductsButton");
-const myProductsButton = document.getElementById("myProductsButton");
 const productDetailView = document.getElementById("productDetailView");
 const productDetailTitle = document.getElementById("productDetailTitle");
 const productDetailBody = document.getElementById("productDetailBody");
 const productDetailBackButton = document.getElementById("productDetailBackButton");
 const contactOwnerButton = document.getElementById("contactOwnerButton");
-const myProductsView = document.getElementById("myProductsView");
-const myProductsGrid = document.getElementById("myProductsGrid");
-const myProductsStatus = document.getElementById("myProductsStatus");
-const myProductsBackButton = document.getElementById("myProductsBackButton");
+const profileProductsGrid = document.getElementById("profileProductsGrid");
+const profileProductsStatus = document.getElementById("profileProductsStatus");
+const buyProductButton = document.getElementById("buyProductButton");
 const editProductView = document.getElementById("editProductView");
 const editProductForm = document.getElementById("editProductForm");
 const editProductBackButton = document.getElementById("editProductBackButton");
@@ -262,7 +260,6 @@ const hideAllViews = () => {
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
   productDetailView?.classList.add("hidden");
-  myProductsView?.classList.add("hidden");
   editProductView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
   unsubscribeActiveChat();
@@ -450,12 +447,7 @@ const resolveRoute = async ({ replace = false } = {}) => {
     return;
   }
 
-  if (path === "/my-products") {
-    await showMyProductsView({ replace });
-    return;
-  }
-
-  const editMatch = path.match(/^\/my-products\/([^/]+)\/edit$/);
+  const editMatch = path.match(/^\/products\/([^/]+)\/edit$/);
   if (editMatch) {
     await showEditProductView(editMatch[1], { replace });
     return;
@@ -486,7 +478,6 @@ const showAuthView = () => {
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
   productDetailView?.classList.add("hidden");
-  myProductsView?.classList.add("hidden");
   editProductView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
 };
@@ -500,7 +491,6 @@ const showSubscriptionsView = () => {
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
   productDetailView?.classList.add("hidden");
-  myProductsView?.classList.add("hidden");
   editProductView?.classList.add("hidden");
 
   if (activeUser) {
@@ -529,7 +519,35 @@ const showMarketplaceView = (user, { replace = false } = {}) => {
   renderProducts();
 };
 
-const showProfileView = () => {
+const renderProfileProducts = async () => {
+  if (!activeUser || !productShape || !profileProductsGrid || !profileProductsStatus) return;
+  profileProductsStatus.textContent = "Cargando tus productos en venta...";
+  try {
+    const rows = await listMyProducts(supabase, productShape, activeUser.id);
+    if (!rows.length) {
+      profileProductsGrid.innerHTML = "<p class=\"empty-state\">Aún no has publicado productos.</p>";
+      profileProductsStatus.textContent = "";
+      return;
+    }
+
+    profileProductsGrid.innerHTML = rows
+      .map((item) => {
+        const id = safeValue(item, productShape.map.id, "");
+        return `${productCardHTML(item, productShape)}
+          <div class=\"card-actions\" data-profile-actions=\"${id}\">
+            <button class=\"action-btn\" data-profile-action=\"edit\" data-id=\"${id}\">Editar</button>
+            <button class=\"action-btn buy\" data-profile-action=\"delete\" data-id=\"${id}\">Borrar</button>
+          </div>`;
+      })
+      .join("");
+
+    profileProductsStatus.textContent = "";
+  } catch (error) {
+    profileProductsStatus.textContent = error.message;
+  }
+};
+
+const showProfileView = async () => {
   authView.classList.add("hidden");
   marketplaceView.classList.add("hidden");
   subscriptionsView.classList.add("hidden");
@@ -538,10 +556,11 @@ const showProfileView = () => {
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
   productDetailView?.classList.add("hidden");
-  myProductsView?.classList.add("hidden");
   editProductView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
   fillProfileForm(activeUser);
+  await ensureProductShape();
+  await renderProfileProducts();
 };
 
 const showUploadProductView = () => {
@@ -553,7 +572,6 @@ const showUploadProductView = () => {
   chatRegistryView?.classList.add("hidden");
   chatView?.classList.add("hidden");
   productDetailView?.classList.add("hidden");
-  myProductsView?.classList.add("hidden");
   editProductView?.classList.add("hidden");
   topbarAuthCta.classList.add("hidden");
 };
@@ -606,46 +624,10 @@ const showProductDetailView = async (id, { replace = false } = {}) => {
   }
 };
 
-const renderMyProducts = async () => {
-  if (!activeUser || !productShape) return;
-  myProductsStatus.textContent = "Cargando mis productos...";
-  try {
-    const rows = await listMyProducts(supabase, productShape, activeUser.id);
-    if (!rows.length) {
-      myProductsGrid.innerHTML = '<p class="empty-state">Aún no has publicado productos.</p>';
-      myProductsStatus.textContent = "";
-      return;
-    }
-
-    myProductsGrid.innerHTML = rows
-      .map((item) => {
-        const id = safeValue(item, productShape.map.id, "");
-        return `${productCardHTML(item, productShape)}
-          <div class="card-actions" data-my-actions="${id}">
-            <button class="action-btn" data-my-action="edit" data-id="${id}">Editar</button>
-            <button class="action-btn buy" data-my-action="delete" data-id="${id}">Borrar</button>
-          </div>`;
-      })
-      .join("");
-
-    myProductsStatus.textContent = "";
-  } catch (error) {
-    myProductsStatus.textContent = error.message;
-  }
-};
-
-const showMyProductsView = async ({ replace = false } = {}) => {
-  hideAllViews();
-  myProductsView?.classList.remove("hidden");
-  navigateTo("/my-products", { replace });
-  await ensureProductShape();
-  await renderMyProducts();
-};
-
 const showEditProductView = async (id, { replace = false } = {}) => {
   hideAllViews();
   editProductView?.classList.remove("hidden");
-  navigateTo(`/my-products/${id}/edit`, { replace });
+  navigateTo(`/products/${id}/edit`, { replace });
   activeEditingProductId = id;
 
   try {
@@ -680,19 +662,22 @@ subscriptionsBackButton?.addEventListener("click", () => {
   }
   showAuthView();
 });
-profileButton?.addEventListener("click", showProfileView);
+profileButton?.addEventListener("click", async () => showProfileView());
 profileBackButton?.addEventListener("click", async () => showProductsView());
 chatBackButton?.addEventListener("click", async () => showChatRegistryView());
 chatRegistryButton?.addEventListener("click", async () => showChatRegistryView());
 chatRegistryBackButton?.addEventListener("click", async () => showProductsView());
 browseProductsButton?.addEventListener("click", async () => showProductsView());
-myProductsButton?.addEventListener("click", async () => showMyProductsView());
-myProductsBackButton?.addEventListener("click", async () => showProductsView());
 productDetailBackButton?.addEventListener("click", async () => showProductsView());
-editProductBackButton?.addEventListener("click", async () => showMyProductsView());
+editProductBackButton?.addEventListener("click", showProfileView);
 contactOwnerButton?.addEventListener("click", async () => {
   // TODO: conectar con conversación por owner y product_id cuando exista mapping directo.
   await showChatRegistryView();
+});
+buyProductButton?.addEventListener("click", () => {
+  if (!activeProductDetail || !productShape) return;
+  const title = safeValue(activeProductDetail, productShape.map.title, "este producto");
+  showToast(`Compra iniciada para ${title}.`);
 });
 generateAvatarButton?.addEventListener("click", () => {
   const currentName = profileForm?.elements?.displayName?.value || activeUser?.email || "Kuoia";
@@ -923,16 +908,16 @@ uploadProductForm?.addEventListener("submit", async (event) => {
     if (insertError) throw insertError;
     uploadProductForm.reset();
     showToast("Producto creado correctamente.");
-    await showMyProductsView();
+    await showProfileView();
   } catch (error) {
     showToast(error.message || "No se pudo crear el producto.");
   }
 });
 
-myProductsGrid?.addEventListener("click", async (event) => {
+profileProductsGrid?.addEventListener("click", async (event) => {
   const target = event.target;
   if (!(target instanceof HTMLButtonElement)) return;
-  const action = target.dataset.myAction;
+  const action = target.dataset.profileAction;
   const id = target.dataset.id;
   if (!action || !id) return;
 
@@ -945,7 +930,7 @@ myProductsGrid?.addEventListener("click", async (event) => {
     try {
       await deleteProduct(supabase, productShape, id);
       showToast("Producto eliminado.");
-      await renderMyProducts();
+      await renderProfileProducts();
     } catch (error) {
       showToast(error.message || "No se pudo eliminar.");
     }
@@ -974,7 +959,7 @@ editProductForm?.addEventListener("submit", async (event) => {
   try {
     await updateProduct(supabase, productShape, activeEditingProductId, payload);
     showToast("Producto actualizado.");
-    await showMyProductsView();
+    await showProfileView();
   } catch (error) {
     showToast(error.message || "No se pudo actualizar.");
   }

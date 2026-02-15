@@ -164,7 +164,6 @@
           </div>
           <div class="header-actions">
             <button class="btn btn-secondary" id="browseProductsButton" type="button">Products</button>
-            <button class="btn btn-secondary" id="myProductsButton" type="button">Mis productos</button>
             <button class="status-chip" id="chatRegistryButton" type="button" aria-live="polite">
               💬 Chats
             </button>
@@ -278,22 +277,9 @@
           </header>
           <div id="productDetailBody"></div>
           <div class="upload-product-actions">
-            <button class="btn btn-primary" id="contactOwnerButton" type="button">Contactar</button>
+            <button class="btn btn-secondary" id="contactOwnerButton" type="button">Chatear con vendedor</button>
+            <button class="btn btn-primary" id="buyProductButton" type="button">Comprar</button>
           </div>
-        </div>
-      </section>
-
-      <section class="my-products-view hidden" id="myProductsView" aria-label="Mis productos">
-        <div class="upload-product-card">
-          <header class="upload-product-header">
-            <div>
-              <p class="eyebrow">Gestión</p>
-              <h2>Mis productos</h2>
-            </div>
-            <button class="btn btn-secondary" id="myProductsBackButton" type="button">Volver</button>
-          </header>
-          <p class="chat-status" id="myProductsStatus"></p>
-          <div class="marketplace-grid" id="myProductsGrid"></div>
         </div>
       </section>
 
@@ -428,6 +414,16 @@
               <button class="btn btn-primary" type="submit">Guardar perfil</button>
               <button class="btn btn-secondary" id="profileBackButton" type="button">Volver al inicio</button>
             </div>
+
+            <section class="profile-products-shell" aria-label="Productos del perfil">
+              <div class="profile-products-header">
+                <p class="eyebrow">Tu escaparate</p>
+                <h3>Productos en venta</h3>
+                <p class="subtitle">Como en Wallapop: aquí ves todo lo que tienes publicado.</p>
+              </div>
+              <p class="chat-status" id="profileProductsStatus"></p>
+              <div class="marketplace-grid" id="profileProductsGrid"></div>
+            </section>
           </form>
         </div>
       </section>
