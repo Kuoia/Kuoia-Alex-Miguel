@@ -892,13 +892,32 @@ uploadProductForm?.addEventListener("submit", async (event) => {
     }
 
     // 4) Intento de inserción en la tabla products.
-    const insertResult = await supabase.from("products").insert({
+    // Mantenemos claves "por defecto" para esquemas estándar y añadimos alias detectados.
+    const insertPayload = {
       title: cleanTitle,
       description: description.trim(),
       price: numericPrice,
       image_url: imageUrl,
       user_id: user.id,
-    });
+    };
+
+    if (productShape?.map?.title && productShape.map.title !== "title") {
+      insertPayload[productShape.map.title] = cleanTitle;
+    }
+    if (productShape?.map?.description && productShape.map.description !== "description") {
+      insertPayload[productShape.map.description] = description.trim();
+    }
+    if (productShape?.map?.price && productShape.map.price !== "price") {
+      insertPayload[productShape.map.price] = numericPrice;
+    }
+    if (productShape?.map?.image_url && productShape.map.image_url !== "image_url") {
+      insertPayload[productShape.map.image_url] = imageUrl;
+    }
+    if (productShape?.map?.user_id && productShape.map.user_id !== "user_id") {
+      insertPayload[productShape.map.user_id] = user.id;
+    }
+
+    const insertResult = await supabase.from("products").insert(insertPayload);
     console.log("INSERT RESULT:", insertResult);
     const { error: insertError } = insertResult;
     if (insertError) {
